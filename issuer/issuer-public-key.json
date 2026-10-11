@@ -1,0 +1,10 @@
+{
+  "key_ops": [
+    "verify"
+  ],
+  "ext": true,
+  "alg": "PS384",
+  "kty": "RSA",
+  "n": "qHk-Vpu7wf2GIz9m-mO-qJ0lAfwVXiFTwLgnAktIpSLfhX4_6LkibXb28p59Dt61oQyrYY7vmwV9EEKTU2b7dZZ4631cAraAeBgz-ZNmW3_aF4OOE6JkogNwveTK1fLgIGxHwh66IkJVgkC1M4ROpZ3u_ypRZACG97UMkJZ-CeMNv2JYTM3LUcdANY8rl8-quPK7xcviLegERRo7XKXP6tLuOA8KuzhFOXlvB5FZcgWuuwOok1oHcEvhE2FnH5J0jZMwMKYh65STGCveKRjmXyBRmyQlKWR7l0beA-EbbCt0Onwq6TlVAS8Jou6fasfqlmB0mvTlDqQstMX37K3JLw",
+  "e": "AQAB"
+}
