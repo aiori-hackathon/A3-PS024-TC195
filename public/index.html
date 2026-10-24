@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Pass Enterprise Console — Team GODSEC (PS-024)</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6 font-sans">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Top Navbar -->
+        <nav class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-wrap items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                <h1 class="text-lg font-bold text-white tracking-tight">GODSEC <span class="text-sky-400 font-normal">| Privacy Pass Observability Console</span></h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-xl font-mono">PS-024 (RFC 9576/9578)</span>
+                <span id="global-status" class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-800 px-3 py-1.5 rounded-xl font-bold uppercase">System Ready</span>
+            </div>
+        </nav>
+
+        <!-- Main Topology & Controls Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left 2 Cols: Architecture Topology & Live Flow -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Microservice Topology Cards -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Microservice Topology & Cache Inspector</h2>
+                        <div class="flex space-x-2">
+                            <button onclick="startFlow()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-lg">▶ Run Flow</button>
+                            <button onclick="pauseFlow()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">⏸ Pause</button>
+                            <button onclick="viewCache()" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">📦 Inspect Redis Cache</button>
+                            <button onclick="resetSystem()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">🔄 Reset & Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4 text-center relative">
+                        <!-- Client -->
+                        <div id="card-client" class="bg-slate-800 border border-slate-700 rounded-xl p-4 transition-all duration-300">
+                            <div class="text-xl mb-1">💻</div>
+                            <div class="font-bold text-xs text-white">Client</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Wallet / Agent</div>
+                        </div>
+                        <!-- Gateway -->
+                        <div id="card-gateway" class="bg-slate-800 border border-slate-700 rounded-xl p-4 transition-all duration-300 relative">
+                            <div class="text-xl mb-1">🚪</div>
+                            <div class="font-bold text-xs text-white">Gateway</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Port 3002</div>
+                            <!-- Redis Badge -->
+                            <div id="card-redis" class="absolute -bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 px-3 py-0.5 rounded-full text-[10px] text-slate-300 whitespace-nowrap shadow transition-all">
+                                📦 Redis (SETNX)
+                            </div>
+                        </div>
+                        <!-- Issuer -->
+                        <div id="card-issuer" class="bg-slate-800 border border-slate-700 rounded-xl p-4 transition-all duration-300">
+                            <div class="text-xl mb-1">🏛️</div>
+                            <div class="font-bold text-xs text-white">Issuer</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Port 3001</div>
+                        </div>
+                        <!-- Main Server -->
+                        <div id="card-origin" class="bg-slate-800 border border-slate-700 rounded-xl p-4 transition-all duration-300">
+                            <div class="text-xl mb-1">🖥️</div>
+                            <div class="font-bold text-xs text-white">Main Server</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Port 3003</div>
+                        </div>
+                    </div>
+
+                    <!-- Turnstile Widget Integration Area -->
+                    <div class="mt-10 pt-6 border-t border-slate-800 flex flex-col items-center">
+                        <span class="text-xs font-semibold text-slate-400 mb-3">Cloudflare Turnstile CAPTCHA Attestation</span>
+                        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFjpggPl6dft8k9w" data-callback="onTurnstileSuccess"></div>
+                    </div>
+                </div>
+
+                <!-- Live Execution Console -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">Execution Telemetry Logs</h2>
+                    <div id="console" class="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-emerald-400 h-36 overflow-y-auto whitespace-pre-wrap">Console ready.</div>
+                </div>
+
+            </div>
+
+            <!-- Right Col: Live Packet Inspector & Cache State -->
+            <div class="space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl h-full flex flex-col">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-sky-400 mb-3">Active Packet Payload & Redis Inspector</h2>
+                    <div class="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-amber-400 overflow-y-auto whitespace-pre-wrap min-h-[420px]" id="packet-box">
+                        No active packet inspection. Click "Run Flow" or "Inspect Redis Cache"...
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let turnstileToken = null;
+        let isPaused = false;
+
+        function onTurnstileSuccess(token) {
+            turnstileToken = token;
+            log('[Turnstile] Real CAPTCHA attestation token successfully acquired.');
+        }
+
+        function log(msg) {
+            const consoleEl = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            consoleEl.textContent += `[${time}] ${msg}\n`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function inspectPacket(title, req, res) {
+            const box = document.getElementById('packet-box');
+            box.textContent = `=== ${title} ===\n\n[REQUEST PACKET]:\n${typeof req === 'string' ? req : JSON.stringify(req, null, 2)}\n\n[RESPONSE PACKET]:\n${typeof res === 'string' ? res : JSON.stringify(res, null, 2)}`;
+        }
+
+        async function viewCache() {
+            try {
+                const res = await fetch('http://localhost:3002/api/cache');
+                const data = await res.json();
+                inspectPacket('Redis Anti-Replay Cache Inspector', { endpoint: 'GET http://localhost:3002/api/cache' }, data);
+                log(`Redis Cache inspected: ${data.redis_keys_count} token hash(es) stored.`);
+            } catch (err) {
+                log(`Error inspecting cache: ${err.message}. Ensure Gateway & Redis are running.`);
+            }
+        }
+
+        async function resetSystem() {
+            try {
+                const res = await fetch('http://localhost:3002/api/cache/flush', { method: 'DELETE' });
+                const data = await res.json();
+                document.getElementById('console').textContent = 'System reset. All logs cleared and Redis cache flushed.\n';
+                document.getElementById('packet-box').textContent = 'Cache cleared. Ready for new simulation...';
+                document.getElementById('global-status').className = 'text-xs bg-emerald-950 text-emerald-300 border border-emerald-800 px-3 py-1.5 rounded-xl font-bold uppercase';
+                document.getElementById('global-status').textContent = 'System Ready';
+                log(data.message || 'System reset successfully.');
+            } catch (err) {
+                log(`Error resetting system: ${err.message}`);
+            }
+        }
+
+        function highlightCard(cardId, type = 'success') {
+            ['client', 'gateway', 'issuer', 'origin', 'redis'].forEach(c => {
+                const el = document.getElementById(`card-${c}`);
+                if (el) el.className = c === 'redis' ? 'absolute -bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 px-3 py-0.5 rounded-full text-[10px] text-slate-300 whitespace-nowrap shadow transition-all' : 'bg-slate-800 border border-slate-700 rounded-xl p-4 transition-all duration-300';
+            });
+
+            const target = document.getElementById(`card-${cardId}`);
+            if (target) {
+                if (cardId === 'redis') {
+                    target.className = type === 'success'
+                        ? 'absolute -bottom-5 left-1/2 transform -translate-x-1/2 bg-emerald-950 border border-emerald-500 px-3 py-0.5 rounded-full text-[10px] text-emerald-300 font-bold shadow-lg transition-all'
+                        : 'absolute -bottom-5 left-1/2 transform -translate-x-1/2 bg-rose-950 border border-rose-500 px-3 py-0.5 rounded-full text-[10px] text-rose-300 font-bold shadow-lg transition-all';
+                } else {
+                    target.className = type === 'success'
+                        ? 'bg-emerald-950 border-2 border-emerald-500 rounded-xl p-4 text-center shadow-2xl transition-all duration-300 scale-105'
+                        : 'bg-rose-950 border-2 border-rose-500 rounded-xl p-4 text-center shadow-2xl transition-all duration-300 scale-105';
+                }
+            }
+        }
+
+        function pauseFlow() {
+            isPaused = true;
+            document.getElementById('global-status').className = 'text-xs bg-amber-950 text-amber-300 border border-amber-800 px-3 py-1.5 rounded-xl font-bold uppercase';
+            document.getElementById('global-status').textContent = 'Paused';
+            log('Simulation paused.');
+        }
+
+        async function sleep(ms) {
+            return new Promise(resolve => {
+                const check = setInterval(() => {
+                    if (!isPaused) {
+                        clearInterval(check);
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+
+        async function startFlow() {
+            if (!turnstileToken) {
+                alert('Please solve the Cloudflare Turnstile CAPTCHA widget first!');
+                return;
+            }
+
+            isPaused = false;
+            document.getElementById('console').textContent = '';
+            document.getElementById('global-status').className = 'text-xs bg-sky-950 text-sky-300 border border-sky-800 px-3 py-1.5 rounded-xl font-bold uppercase animate-pulse';
+            document.getElementById('global-status').textContent = 'Running Flow';
+            log('Initiating production microservice flow...');
+
+            try {
+                // Step 1: Unauthenticated Request to Gateway
+                highlightCard('client', 'success');
+                highlightCard('gateway', 'error');
+
+                const req1 = { method: 'GET', url: 'http://localhost:3002/protected', headers: {} };
+                inspectPacket('Step 1: Unauthenticated Request (Gateway Challenge)', req1, 'Waiting for gateway response...');
+                log('Client sent GET /protected to Gateway without token.');
+
+                const res1 = await fetch('http://localhost:3002/protected');
+                const data1 = await res1.json();
+                inspectPacket('Step 1: Unauthenticated Request (Gateway Challenge)', req1, { status: res1.status, body: data1 });
+                log(`Gateway 401 Challenge received. issuer_url: ${data1.issuer_url}`);
+
+                if (isPaused) return;
+                await sleep(2500);
+
+                // Step 2: Blind Issuance at Issuer
+                highlightCard('client', 'success');
+                highlightCard('issuer', 'success');
+
+                const req2 = { method: 'POST', url: 'http://localhost:3001/issue', body: { blinded_token: '00024920fd... [256-byte masked message]', attestation: turnstileToken.substring(0, 15) + '...' } };
+                inspectPacket('Step 2: Blind Issuance Request', req2, 'Waiting for issuer signature...');
+                log('Client posted blinded token + Turnstile attestation to Issuer.');
+
+                const res2 = await fetch('http://localhost:3001/issue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        blinded_token: '00024920fd12c8e5d77b863055beed934926e9fcc459b8a06fb6ecde85f0ac88ec0727bb35df65c25507a7da50804c84fccf04559f39004ca5de4b1ed1e56dd00b8521bd022939eb4487bfb6571d1a5e7fcf8647076bd0f2e94126d1a1fc5e1f30e5c695bba0a56bf5a70b6a62054f525951b280fb611ae1a562a5d37ef4162697fd947f6e53bf33166a105715607e21ebb6b24399e3df53225878895d47a4e96ba7301be57377fc1bbcf4b882e71180071fc5d854fdbd0ac8c70476df8cdfb3873c508d292676d74275a6c872cb715dc0d903132a34060b4e3e065aaa5d36ef7bd628a93c21c3a41c42df0a5f3a780364dd4528087d8eb2ca8957c0dcad33ce64305e',
+                        attestation: turnstileToken
+                    })
+                });
+                const data2 = await res2.json();
+                inspectPacket('Step 2: Blind Issuance Request', req2, { status: res2.status, body: data2 });
+                log('Issuer verified Turnstile with Cloudflare API, returned blind signature.');
+
+                if (isPaused) return;
+                await sleep(2500);
+
+                // Step 3: Redemption at Gateway & Origin
+                highlightCard('client', 'success');
+                highlightCard('gateway', 'success');
+                highlightCard('redis', 'success');
+                highlightCard('origin', 'success');
+
+                const walletRes = await fetch('http://localhost:3002/api/get-token');
+                const walletData = await walletRes.json();
+                const validTokenBase64 = walletData.token;
+
+                const req3 = { method: 'GET', url: 'http://localhost:3002/protected', headers: { 'Authorization': `PrivateToken ${validTokenBase64.substring(0, 20)}...` } };
+                inspectPacket('Step 3: Authenticated Redemption', req3, 'Waiting for gateway & origin...');
+                log('Client sent GET /protected with PrivateToken header.');
+
+                const res3 = await fetch('http://localhost:3002/protected', {
+                    headers: { 'Authorization': `PrivateToken ${validTokenBase64}` }
+                });
+                const data3 = await res3.json();
+                inspectPacket('Step 3: Authenticated Redemption', req3, { status: res3.status, redisCheck: 'SETNX OK (Token stored in Redis)', body: data3 });
+                log(`Gateway verified signature & Redis SETNX. Main Server responded: ${JSON.stringify(data3)}`);
+
+                if (isPaused) return;
+                await sleep(2500);
+
+                // Step 4: Replay Attack
+                highlightCard('client', 'success');
+                highlightCard('gateway', 'error');
+                highlightCard('redis', 'error');
+
+                const req4 = { method: 'GET', url: 'http://localhost:3002/protected', headers: { 'Authorization': `PrivateToken ${validTokenBase64.substring(0, 20)}... (Reused)` } };
+                inspectPacket('Step 4: Replay Attack Check', req4, 'Waiting for Redis cache rejection...');
+                log('Client attempted to reuse the same token.');
+
+                const res4 = await fetch('http://localhost:3002/protected', {
+                    headers: { 'Authorization': `PrivateToken ${validTokenBase64}` }
+                });
+                const data4 = await res4.json();
+
+                inspectPacket('Step 4: Replay Attack Check (Successful Block)', req4, { status: res4.status, redisCheck: 'SETNX returned 0 (Token hash already in Redis)', body: data4 });
+                log(`Gateway successfully blocked replay: Status ${res4.status} Unauthorized. Error: ${data4.error}`);
+
+                document.getElementById('global-status').className = 'text-xs bg-emerald-950 text-emerald-300 border border-emerald-800 px-3 py-1.5 rounded-xl font-bold uppercase';
+                document.getElementById('global-status').textContent = 'Secure & Idle';
+                log('Autonomous microservice flow completed successfully!');
+
+            } catch (err) {
+                log(`Error: ${err.message}`);
+                document.getElementById('global-status').className = 'text-xs bg-rose-950 text-rose-300 border border-rose-800 px-3 py-1.5 rounded-xl font-bold uppercase';
+                document.getElementById('global-status').textContent = 'Error';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared-IP Problem Visualizer — Team GODSEC (PS-024)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-8 flex flex-col justify-between">
+    <div class="max-w-5xl mx-auto w-full">
+        <!-- Header -->
+        <header class="text-center border-b border-slate-800 pb-6 mb-8">
+            <h1 class="text-3xl font-extrabold text-sky-400 tracking-tight">Shared-IP Collateral Damage Visualizer</h1>
+            <p class="text-slate-400 mt-1">Team <span class="text-white font-semibold">GODSEC</span> — Problem Statement PS-024</p>
+            <span class="inline-block bg-rose-950 text-rose-300 border border-rose-800 px-3 py-1 rounded-full text-xs font-semibold mt-3">Demonstrating Why Traditional IP Blocking Fails</span>
+        </header>
+
+        <!-- Simulation Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+
+            <!-- Scenario A: Traditional IP Blocking -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-rose-400 mb-2">❌ Traditional IP-Based Rate Limiting</h2>
+                    <p class="text-xs text-slate-400 mb-6">When 1 user misbehaves, the server bans the shared public IP, locking out everyone behind the proxy.</p>
+
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 mb-4 text-center">
+                        <div class="text-xs text-slate-500 uppercase font-bold">Shared Network Exit IP</div>
+                        <div class="text-lg font-mono font-bold text-amber-400">🌐 203.0.113.195 (Corporate Proxy)</div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">👩‍💻 Alice (Legitimate Researcher)</span>
+                            <span id="alice-ip" class="text-xs px-2 py-1 rounded bg-emerald-950 text-emerald-300 font-bold">Access Granted</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">👨‍🎓 Bob (Student Checking Grades)</span>
+                            <span id="bob-ip" class="text-xs px-2 py-1 rounded bg-emerald-950 text-emerald-300 font-bold">Access Granted</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">🤖 Charlie (Aggressive Scraper Bot)</span>
+                            <span class="text-xs px-2 py-1 rounded bg-rose-950 text-rose-300 font-bold">Malicious Activity</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">🧑‍🏫 David (Online Lecturer)</span>
+                            <span id="david-ip" class="text-xs px-2 py-1 rounded bg-emerald-950 text-emerald-300 font-bold">Access Granted</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="runIpBlockSimulation()" class="mt-6 bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl transition shadow-lg text-sm">
+                    Simulate Bot Attack (IP Blocking)
+                </button>
+            </div>
+
+            <!-- Scenario B: Privacy Pass Solution -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-emerald-400 mb-2">✅ Privacy Pass Cryptographic Tokens</h2>
+                    <p class="text-xs text-slate-400 mb-6">Users authenticate with independent cryptographic tokens. Only the bot is blocked; innocent users pass.</p>
+
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 mb-4 text-center">
+                        <div class="text-xs text-slate-500 uppercase font-bold">Shared Network Exit IP</div>
+                        <div class="text-lg font-mono font-bold text-amber-400">🌐 203.0.113.195 (Corporate Proxy)</div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">👩‍💻 Alice (Valid Pass #1)</span>
+                            <span id="alice-pp" class="text-xs px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">Ready</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">👨‍🎓 Bob (Valid Pass #2)</span>
+                            <span id="bob-pp" class="text-xs px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">Ready</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">🤖 Charlie (Reused / Fake Pass)</span>
+                            <span id="charlie-pp" class="text-xs px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">Ready</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sm">🧑‍🏫 David (Valid Pass #3)</span>
+                            <span id="david-pp" class="text-xs px-2 py-1 rounded bg-slate-700 text-slate-300 font-bold">Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="runPrivacyPassSimulation()" class="mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg text-sm">
+                    Simulate Bot Attack (Privacy Pass)
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Explanation Footer -->
+        <div id="simulation-status" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-sm font-mono text-slate-400 shadow-xl">
+            Click either simulation button above to visualize the difference in user experience.
+        </div>
+    </div>
+
+    <script>
+        async function runIpBlockSimulation() {
+            const statusBox = document.getElementById('simulation-status');
+            statusBox.className = 'bg-rose-950 border border-rose-800 rounded-2xl p-6 text-center text-sm font-mono text-rose-300 shadow-xl';
+            statusBox.textContent = '🚨 Charlie (Bot) triggers rate-limit on IP 203.0.113.195. Server bans entire IP address...';
+
+            document.getElementById('alice-ip').className = 'text-xs px-2 py-1 rounded bg-rose-950 text-rose-300 font-bold animate-pulse';
+            document.getElementById('alice-ip').textContent = 'LOCKED OUT (Collateral Damage)';
+
+            document.getElementById('bob-ip').className = 'text-xs px-2 py-1 rounded bg-rose-950 text-rose-300 font-bold animate-pulse';
+            document.getElementById('bob-ip').textContent = 'LOCKED OUT (Collateral Damage)';
+
+            document.getElementById('david-ip').className = 'text-xs px-2 py-1 rounded bg-rose-950 text-rose-300 font-bold animate-pulse';
+            document.getElementById('david-ip').textContent = 'LOCKED OUT (Collateral Damage)';
+
+            setTimeout(() => {
+                statusBox.textContent = '❌ Result: 1 Bad Bot stopped, but 3 Innocent Humans locked out. This is the Shared-IP Collateral Damage problem.';
+            }, 2000);
+        }
+
+        async function runPrivacyPassSimulation() {
+            const statusBox = document.getElementById('simulation-status');
+            statusBox.className = 'bg-emerald-950 border border-emerald-800 rounded-2xl p-6 text-center text-sm font-mono text-emerald-300 shadow-xl';
+            statusBox.textContent = '🔒 Charlie (Bot) attempts request with a reused/invalid token. Gateway blocks Charlie via Redis SETNX...';
+
+            document.getElementById('alice-pp').className = 'text-xs px-2 py-1 rounded bg-emerald-900 text-emerald-200 font-bold';
+            document.getElementById('alice-pp').textContent = '200 OK (Independent Token)';
+
+            document.getElementById('bob-pp').className = 'text-xs px-2 py-1 rounded bg-emerald-900 text-emerald-200 font-bold';
+            document.getElementById('bob-pp').textContent = '200 OK (Independent Token)';
+
+            document.getElementById('charlie-pp').className = 'text-xs px-2 py-1 rounded bg-rose-900 text-rose-200 font-bold animate-bounce';
+            document.getElementById('charlie-pp').textContent = '401 Replay Blocked';
+
+            document.getElementById('david-pp').className = 'text-xs px-2 py-1 rounded bg-emerald-900 text-emerald-200 font-bold';
+            document.getElementById('david-pp').textContent = '200 OK (Independent Token)';
+
+            setTimeout(() => {
+                statusBox.textContent = '✅ Result: Bad Bot blocked instantly, while Alice, Bob, and David access the site smoothly. Zero collateral damage!';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

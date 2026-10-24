@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GodSec - Phase 1: Inventory Intelligence & Architecture Mapper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid fa-shield-halved text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white">GodSec <span class="text-indigo-400 font-normal">SecureNet26</span></h1>
+          <p class="text-xs text-slate-400">Context-Aware AI Security Validation & Auto-Remediation Platform</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Phase 1 Active
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
+
+    <!-- Hero / Repository Connector Card -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="max-w-3xl space-y-4">
+        <h2 class="text-2xl font-bold tracking-tight text-white flex items-center">
+          <i class="fa-solid fa-code-branch text-indigo-400 mr-3"></i> Repository Connector & Phase 1 Ingester
+        </h2>
+        <p class="text-slate-400 text-sm">
+          Connect your AI-generated code repository or target project. GodSec will walk files, resolve dependencies, classify architecture, and construct the Unified Application Map.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <div class="relative flex-grow">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-brands fa-github text-lg"></i>
+            </div>
+            <input type="text" id="repoUrl" value="https://github.com/org/securenet26-demo-repo.git" aria-label="Repository URL"
+              class="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+          </div>
+          <button id="scanBtn" onclick="runPhase1Scan()"
+            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-radar"></i>
+            <span>Run Phase 1 Scan</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scanning Progress / Loader (Hidden by default) -->
+    <div id="loaderCard" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-4 shadow-xl">
+      <div class="inline-block animate-spin text-indigo-400 text-4xl">
+        <i class="fa-solid fa-circle-notch"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-white">Running Inventory Intelligence & Architecture Mapping...</h3>
+      <p id="loaderStatus" class="text-xs text-slate-400">Walking files and building dependency trees...</p>
+    </div>
+
+    <!-- Verification Output Section (Hidden by default) -->
+    <div id="outputSection" class="hidden space-y-6">
+
+      <!-- Top Summary Metrics Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
+          <p class="text-xs text-slate-400 font-medium">Architecture Type</p>
+          <div class="flex items-center justify-between pt-1">
+            <h4 id="metricArch" class="text-xl font-bold text-white">-</h4>
+            <span id="metricConfidence" class="text-xs px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">-</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
+          <p class="text-xs text-slate-400 font-medium">Total Files Discovered</p>
+          <div class="flex items-center justify-between pt-1">
+            <h4 id="metricFiles" class="text-xl font-bold text-emerald-400">-</h4>
+            <i class="fa-solid fa-file-code text-slate-600 text-lg"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
+          <p class="text-xs text-slate-400 font-medium">Direct Dependencies</p>
+          <div class="flex items-center justify-between pt-1">
+            <h4 id="metricDeps" class="text-xl font-bold text-indigo-400">-</h4>
+            <i class="fa-solid fa-cubes text-slate-600 text-lg"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-1">
+          <p class="text-xs text-slate-400 font-medium">Scan Latency</p>
+          <div class="flex items-center justify-between pt-1">
+            <h4 id="metricLatency" class="text-xl font-bold text-amber-400">-</h4>
+            <i class="fa-solid fa-bolt text-slate-600 text-lg"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Architecture Reasons & Component Breakdown -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h3 class="text-lg font-bold text-white flex items-center">
+            <i class="fa-solid fa-sitemap text-indigo-400 mr-2"></i> Architecture Classification & Reasons
+          </h3>
+          <ul id="archReasonsList" class="space-y-2 text-sm text-slate-300">
+            <!-- Populated via JS -->
+          </ul>
+
+          <div class="border-t border-slate-800 pt-4 mt-4">
+            <h4 class="text-sm font-semibold text-slate-200 mb-2">Component Extension Breakdown</h4>
+            <div id="componentBreakdown" class="flex flex-wrap gap-2">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Dependencies List -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h3 class="text-lg font-bold text-white flex items-center">
+            <i class="fa-solid fa-box-archive text-indigo-400 mr-2"></i> Dependency Inventory (SCA)
+          </h3>
+          <div class="max-h-60 overflow-y-auto pr-2 space-y-1.5" id="dependenciesList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Unified Application Map JSON Output Explorer -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white flex items-center">
+            <i class="fa-solid fa-code text-indigo-400 mr-2"></i> Unified Application Map (JSON Output for Verification)
+          </h3>
+          <button onclick="copyJsonOutput()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-all flex items-center space-x-1.5">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy JSON</span>
+          </button>
+        </div>
+        <pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-indigo-300 font-mono overflow-x-auto max-h-96" id="jsonOutput">
+          <!-- Populated via JS -->
+        </pre>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-900/40 py-4 text-center text-xs text-slate-500">
+    GodSec (SecureNet26) — PS-02: Secure Validation for AI-Generated Code | National Forensic Sciences University
+  </footer>
+
+  <script>
+    async function runPhase1Scan() {
+      const repoUrl = document.getElementById('repoUrl').value;
+      const loaderCard = document.getElementById('loaderCard');
+      const outputSection = document.getElementById('outputSection');
+      const scanBtn = document.getElementById('scanBtn');
+
+      scanBtn.disabled = true;
+      loaderCard.classList.remove('hidden');
+      outputSection.classList.add('hidden');
+
+      const statuses = [
+        "Ingesting repository & walking files...",
+        "Parsing dependency manifests (package.json / requirements.txt)...",
+        "Running architecture classification heuristics...",
+        "Constructing Unified Application Map..."
+      ];
+
+      let idx = 0;
+      const statusInterval = setInterval(() => {
+        idx = (idx + 1) % statuses.length;
+        document.getElementById('loaderStatus').innerText = statuses[idx];
+      }, 600);
+
+      try {
+        const response = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repo_url: repoUrl })
+        });
+        const data = await response.json();
+
+        clearInterval(statusInterval);
+        loaderCard.classList.add('hidden');
+        scanBtn.disabled = false;
+
+        if (data.success) {
+          renderOutput(data.output, data.scan_duration_ms);
+          outputSection.classList.remove('hidden');
+        } else {
+          alert('Scan failed: ' + data.error);
+        }
+      } catch (err) {
+        clearInterval(statusInterval);
+        loaderCard.classList.add('hidden');
+        scanBtn.disabled = false;
+        alert('Error connecting to backend: ' + err.message);
+      }
+    }
+
+    function renderOutput(output, latency) {
+      document.getElementById('metricArch').innerText = output.architecture.type;
+      document.getElementById('metricConfidence').innerText = output.architecture.confidence + ' Confidence';
+      document.getElementById('metricFiles').innerText = output.total_files;
+      document.getElementById('metricDeps').innerText = output.dependencies.direct.length;
+      document.getElementById('metricLatency').innerText = latency + ' ms';
+
+      // Architecture Reasons
+      const reasonsList = document.getElementById('archReasonsList');
+      reasonsList.innerHTML = '';
+      output.architecture.reasons.forEach(r => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center space-x-2';
+        li.innerHTML = `<i class="fa-solid fa-check text-emerald-400 text-xs"></i><span>${r}</span>`;
+        reasonsList.appendChild(li);
+      });
+
+      // Component Breakdown
+      const breakdown = document.getElementById('componentBreakdown');
+      breakdown.innerHTML = '';
+      for (const [ext, count] of Object.entries(output.component_breakdown)) {
+        const badge = document.createElement('span');
+        badge.className = 'px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs font-mono text-slate-300';
+        badge.innerHTML = `${ext || 'no-ext'}: <span class="text-indigo-400 font-semibold">${count}</span>`;
+        breakdown.appendChild(badge);
+      }
+
+      // Dependencies List
+      const depsList = document.getElementById('dependenciesList');
+      depsList.innerHTML = '';
+      if (output.dependencies.direct.length === 0) {
+        depsList.innerHTML = '<p class="text-xs text-slate-500 italic">No direct dependencies found in manifest files.</p>';
+      } else {
+        output.dependencies.direct.forEach(dep => {
+          const item = document.createElement('div');
+          item.className = 'p-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 flex items-center justify-between';
+          item.innerHTML = `<span><i class="fa-solid fa-cube text-indigo-400 mr-2"></i>${dep}</span><span class="text-[10px] text-slate-500">Direct</span>`;
+          depsList.appendChild(item);
+        });
+      }
+
+      // JSON Output
+      document.getElementById('jsonOutput').innerText = JSON.stringify(output, null, 2);
+    }
+
+    function copyJsonOutput() {
+      const jsonText = document.getElementById('jsonOutput').innerText;
+      navigator.clipboard.writeText(jsonText);
+      alert('Application Map JSON copied to clipboard!');
+    }
+  </script>
+</body>
+</html>

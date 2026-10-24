@@ -16,7 +16,7 @@ app.use(express.json());
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE');
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
     }
@@ -56,7 +56,41 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-// Dashboard helper endpoint to generate a valid Privacy Pass token end-to-end
+// Dashboard helper: view Redis cache contents
+app.get('/api/cache', async (req, res) => {
+    try {
+        const keys = await redis.keys('*');
+        const cacheItems = {};
+        for (const key of keys) {
+            const ttl = await redis.ttl(key);
+            const val = await redis.get(key);
+            cacheItems[key] = { value: val, ttl_seconds: ttl };
+        }
+        res.json({ redis_keys_count: keys.length, cache: cacheItems });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Dashboard helper: flush Redis cache
+post: app.post('/api/cache/flush', async (req, res) => {
+    try {
+        await redis.flushall();
+        res.json({ status: 'success', message: 'Redis cache flushed successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+app.delete('/api/cache/flush', async (req, res) => {
+    try {
+        await redis.flushall();
+        res.json({ status: 'success', message: 'Redis cache flushed successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Dashboard helper to generate a valid Privacy Pass token end-to-end
 app.get('/api/get-token', async (req, res) => {
     try {
         const { client, tokReq } = await generateTokenRequest();
