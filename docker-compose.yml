@@ -18,6 +18,10 @@ services:
       dockerfile: gateway/Dockerfile
     ports:
       - "3002:3002"
+    environment:
+      - REDIS_HOST=redis
+      - ISSUER_URL=http://issuer:3001
+      - ORIGIN_URL=http://origin:3003
     depends_on:
       - redis
       - issuer
@@ -28,11 +32,17 @@ services:
       dockerfile: origin/Dockerfile
     ports:
       - "3003:3003"
+    depends_on:
+      - gateway
   
   client:
     build:
       context: .
       dockerfile: client/Dockerfile
+    environment:
+      - ISSUER_URL=http://issuer:3001
+      - GATEWAY_URL=http://gateway:3002
+      - ORIGIN_URL=http://origin:3003
     depends_on:
       - issuer
       - gateway

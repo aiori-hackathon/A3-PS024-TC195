@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 });
 
 const redis = new Redis({
-    host: 'localhost',
+    host: process.env.REDIS_HOST || 'redis',
     port: 6379,
     maxRetriesPerRequest: 1,
     retryStrategy(times) {
@@ -73,7 +73,7 @@ app.get('/api/cache', async (req, res) => {
 });
 
 // Dashboard helper: flush Redis cache
-post: app.post('/api/cache/flush', async (req, res) => {
+app.post('/api/cache/flush', async (req, res) => {
     try {
         await redis.flushall();
         res.json({ status: 'success', message: 'Redis cache flushed successfully.' });
@@ -81,6 +81,7 @@ post: app.post('/api/cache/flush', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 app.delete('/api/cache/flush', async (req, res) => {
     try {
         await redis.flushall();
