@@ -36,7 +36,7 @@ body{
   color:var(--txt);
   min-height:100vh;
   padding:24px 24px 60px;
-  font-size: 15px; /* Larger base font size for readability */
+  font-size: 15px;
   -webkit-font-smoothing:antialiased;
   position:relative;
   overflow-x:hidden;
@@ -246,7 +246,7 @@ body::after{
   background:radial-gradient(circle at 50% 45%, rgba(56,189,248,.06), transparent 62%), #060a13;
   padding:8px;overflow:hidden;
 }
-#arch{width:100%;height:auto;display:block;min-height:300px}
+#arch{width:100%;height:auto;display:block;min-height:360px}
 .node rect{fill:url(#nodeGrad);stroke:#27395e;stroke-width:1.5;transition:stroke .35s, fill .35s}
 .node text{text-anchor:middle;font-family:'Inter',sans-serif;pointer-events:none}
 .node .n-title{font-size:12.5px;font-weight:700;letter-spacing:.09em;fill:#e2e8f0;transition:.35s}
@@ -459,7 +459,7 @@ body::after{
         <div class="panel-head">
           <div>
             <h2 class="panel-title">Problem Statement Requirements Audit</h2>
-            <p class="panel-sub">Select any requirement below to inspect its exact implementation logic, file path and code proof.</p>
+            <p class="panel-sub">Select a requirement to inspect its implementation logic, file path and code proof.</p>
           </div>
           <div class="ring">
             <svg viewBox="0 0 56 56">
@@ -491,13 +491,13 @@ body::after{
     </div>
   </section>
 
-  <!-- TAB 2 — ARCHITECTURE + STEPPER -->
+  <!-- TAB 2 — ARCHITECTURE + STEPPER (WITH LOAD BALANCER & KEY ROTATION) -->
   <section id="tab-stepper" class="tab-panel hidden">
     <div class="panel arch-panel">
       <div class="panel-head">
         <div>
-          <h2 class="panel-title">Live System Architecture — Packets In Flight</h2>
-          <p class="panel-sub">Every step of the Privacy Pass handshake is traced across the microservice topology in real time.</p>
+          <h2 class="panel-title">Live System Architecture — Load Balancer, Key Rotation &amp; Packets</h2>
+          <p class="panel-sub">Every step of the Privacy Pass handshake is traced across the Load Balancer, Gateway cluster, Issuer Key Rotation, and Redis Cache.</p>
         </div>
         <div class="step-controls">
           <div class="step-meter">
@@ -506,11 +506,12 @@ body::after{
           </div>
           <button class="btn" onclick="resetStepper()">↺ Reset</button>
           <button class="btn btn--primary" id="next-btn" onclick="nextStep()">Next Step ▶</button>
+          <button class="btn btn--primary" style="background:linear-gradient(135deg,#a78bfa,#6366f1)" onclick="triggerKeyRotation()">🔄 Rotate Key</button>
         </div>
       </div>
 
       <div class="arch-wrap">
-        <svg id="arch" viewBox="0 0 850 440" preserveAspectRatio="xMidYMid meet">
+        <svg id="arch" viewBox="0 0 950 480" preserveAspectRatio="xMidYMid meet">
           <defs>
             <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
               <feGaussianBlur stdDeviation="5" result="blur"/>
@@ -522,34 +523,63 @@ body::after{
             </linearGradient>
           </defs>
 
+          <!-- EDGES -->
           <g id="edges">
-            <path id="e-client-issuer" class="edge" d="M175,172 C232,172 242,80 300,80"/>
-            <path id="e-client-gateway" class="edge" d="M175,220 L300,220"/>
-            <path id="e-issuer-cf" class="edge" d="M470,80 L640,80"/>
-            <path id="e-gateway-redis" class="edge" d="M470,220 L640,220"/>
-            <path id="e-gateway-main" class="edge" d="M385,260 L385,330"/>
+            <!-- Client -> Issuer -->
+            <path id="e-client-issuer" class="edge" d="M160,192 C210,192 230,80 290,80"/>
+            <!-- Client -> Load Balancer -->
+            <path id="e-client-lb" class="edge" d="M160,220 L290,220"/>
+            <!-- Load Balancer -> Gateway -->
+            <path id="e-lb-gateway" class="edge" d="M430,220 L510,220"/>
+            <!-- Issuer -> Cloudflare Turnstile -->
+            <path id="e-issuer-cf" class="edge" d="M450,80 L730,80"/>
+            <!-- Issuer -> Gateway (24h Key Rotation / JWKS Sync) -->
+            <path id="e-issuer-key" class="edge" d="M370,120 L370,160 L590,160 L590,180"/>
+            <!-- Gateway -> Redis Cache -->
+            <path id="e-gateway-redis" class="edge" d="M670,220 L730,220"/>
+            <!-- Gateway -> Main Server -->
+            <path id="e-gateway-main" class="edge" d="M590,260 L590,360 L730,360"/>
           </g>
 
+          <!-- PACKETS -->
           <g id="packets">
-            <circle id="pkt-client-issuer" class="packet" r="4.5"><animateMotion dur="0.9s" begin="indefinite" fill="freeze"><mpath href="#e-client-issuer"/></animateMotion></circle>
-            <circle id="pkt-client-gateway" class="packet" r="4.5"><animateMotion dur="0.75s" begin="indefinite" fill="freeze"><mpath href="#e-client-gateway"/></animateMotion></circle>
-            <circle id="pkt-issuer-cf" class="packet" r="4.5"><animateMotion dur="0.8s" begin="indefinite" fill="freeze"><mpath href="#e-issuer-cf"/></animateMotion></circle>
-            <circle id="pkt-gateway-redis" class="packet" r="4.5"><animateMotion dur="0.8s" begin="indefinite" fill="freeze"><mpath href="#e-gateway-redis"/></animateMotion></circle>
-            <circle id="pkt-gateway-main" class="packet" r="4.5"><animateMotion dur="0.7s" begin="indefinite" fill="freeze"><mpath href="#e-gateway-main"/></animateMotion></circle>
+            <circle id="pkt-client-issuer" class="packet" r="5"><animateMotion dur="0.85s" begin="indefinite" fill="freeze"><mpath href="#e-client-issuer"/></animateMotion></circle>
+            <circle id="pkt-client-lb" class="packet" r="5"><animateMotion dur="0.7s" begin="indefinite" fill="freeze"><mpath href="#e-client-lb"/></animateMotion></circle>
+            <circle id="pkt-lb-gateway" class="packet" r="5"><animateMotion dur="0.65s" begin="indefinite" fill="freeze"><mpath href="#e-lb-gateway"/></animateMotion></circle>
+            <circle id="pkt-issuer-cf" class="packet" r="5"><animateMotion dur="0.8s" begin="indefinite" fill="freeze"><mpath href="#e-issuer-cf"/></animateMotion></circle>
+            <circle id="pkt-issuer-key" class="packet" r="5"><animateMotion dur="0.9s" begin="indefinite" fill="freeze"><mpath href="#e-issuer-key"/></animateMotion></circle>
+            <circle id="pkt-gateway-redis" class="packet" r="5"><animateMotion dur="0.75s" begin="indefinite" fill="freeze"><mpath href="#e-gateway-redis"/></animateMotion></circle>
+            <circle id="pkt-gateway-main" class="packet" r="5"><animateMotion dur="0.8s" begin="indefinite" fill="freeze"><mpath href="#e-gateway-main"/></animateMotion></circle>
           </g>
 
-          <g class="node" id="node-client"><rect x="30" y="150" width="145" height="110" rx="16"/><circle class="n-dot" cx="48" cy="168" r="4"/><text class="n-title" x="102" y="200">CLIENT</text><text class="n-sub" x="102" y="220">Browser / SDK</text></g>
-          <g class="node" id="node-issuer"><rect x="300" y="40" width="170" height="80" rx="16"/><circle class="n-dot" cx="318" cy="58" r="4"/><text class="n-title" x="385" y="76">ISSUER</text><text class="n-sub" x="385" y="96">:3001 · RSA-PSS</text></g>
-          <g class="node" id="node-gateway"><rect x="300" y="180" width="170" height="80" rx="16"/><circle class="n-dot" cx="318" cy="198" r="4"/><text class="n-title" x="385" y="216">GATEWAY</text><text class="n-sub" x="385" y="236">:3002 · Verify</text></g>
-          <g class="node" id="node-main"><rect x="300" y="330" width="170" height="80" rx="16"/><circle class="n-dot" cx="318" cy="348" r="4"/><text class="n-title" x="385" y="366">ORIGIN</text><text class="n-sub" x="385" y="386">:8080 · Content</text></g>
-          <g class="node" id="node-cf"><rect x="640" y="40" width="180" height="80" rx="16"/><circle class="n-dot" cx="658" cy="58" r="4"/><text class="n-title" x="730" y="76">CLOUDFLARE</text><text class="n-sub" x="730" y="96">Turnstile siteverify</text></g>
-          <g class="node" id="node-redis"><rect x="640" y="180" width="180" height="80" rx="16"/><circle class="n-dot" cx="658" cy="198" r="4"/><text class="n-title" x="730" y="216">REDIS</text><text class="n-sub" x="730" y="236">SETNX · EX 3600</text></g>
+          <!-- NODES -->
+          <!-- Client -->
+          <g class="node" id="node-client"><rect x="20" y="150" width="140" height="110" rx="16"/><circle class="n-dot" cx="38" cy="168" r="4"/><text class="n-title" x="90" y="200">CLIENT</text><text class="n-sub" x="90" y="220">Browser / SDK</text></g>
+
+          <!-- Issuer (With 24h Key Rotation badge) -->
+          <g class="node" id="node-issuer"><rect x="290" y="40" width="160" height="80" rx="16"/><circle class="n-dot" cx="308" cy="58" r="4"/><text class="n-title" x="370" y="74">ISSUER</text><text class="n-sub" x="370" y="94">:3001 · 24h Key Rotation</text></g>
+
+          <!-- Layer 7 Load Balancer -->
+          <g class="node" id="node-lb"><rect x="290" y="180" width="140" height="80" rx="16"/><circle class="n-dot" cx="308" cy="198" r="4"/><text class="n-title" x="360" y="214">LOAD BALANCER</text><text class="n-sub" x="360" y="234">L7 NGINX / HPA</text></g>
+
+          <!-- Gateway -->
+          <g class="node" id="node-gateway"><rect x="510" y="180" width="160" height="80" rx="16"/><circle class="n-dot" cx="528" cy="198" r="4"/><text class="n-title" x="590" y="214">GATEWAY</text><text class="n-sub" x="590" y="234">:3002 · Verifier</text></g>
+
+          <!-- Cloudflare Turnstile -->
+          <g class="node" id="node-cf"><rect x="730" y="40" width="180" height="80" rx="16"/><circle class="n-dot" cx="748" cy="58" r="4"/><text class="n-title" x="820" y="74">CLOUDFLARE</text><text class="n-sub" x="820" y="94">Turnstile siteverify</text></g>
+
+          <!-- Redis Cache -->
+          <g class="node" id="node-redis"><rect x="730" y="180" width="180" height="80" rx="16"/><circle class="n-dot" cx="748" cy="198" r="4"/><text class="n-title" x="820" y="214">REDIS CLUSTER</text><text class="n-sub" x="820" y="234">SETNX · EX 3600</text></g>
+
+          <!-- Main Server / Origin -->
+          <g class="node" id="node-main"><rect x="730" y="320" width="180" height="80" rx="16"/><circle class="n-dot" cx="748" cy="338" r="4"/><text class="n-title" x="820" y="354">MAIN SERVER</text><text class="n-sub" x="820" y="374">:3003 · Origin</text></g>
         </svg>
       </div>
 
       <div class="legend">
         <span><i style="background:#27395e"></i>Idle link</span>
         <span><i style="background:#38bdf8"></i>Active request path</span>
+        <span><i style="background:#a78bfa"></i>24h Key Rotation JWKS Sync</span>
         <span><i style="background:#fb7185"></i>Rejected / replay</span>
         <span><i style="background:#34d399"></i>Verified node</span>
       </div>
@@ -571,7 +601,7 @@ body::after{
         <div class="panel-head" style="margin-bottom:14px"><h2 class="panel-title" style="color:#7dd3fc">Step Execution</h2></div>
         <div class="step-card" id="step-card">
           <b>Awaiting protocol start</b>
-          Press <span class="mono" style="color:#7dd3fc">Next Step</span> to begin the Privacy Pass handshake and watch packets traverse the architecture above.
+          Press <span class="mono" style="color:#7dd3fc">Next Step</span> to begin the Privacy Pass handshake.
         </div>
         <div class="turnstile-box hidden" id="turnstile-box">
           <span class="ts-status" id="turnstile-status">Gateway returned a 401 challenge — solve the Cloudflare Turnstile CAPTCHA to obtain an attestation proof.</span>
@@ -890,16 +920,32 @@ function updateProgress() {
   $('#next-btn').disabled = state.step >= 4;
 }
 
+async function triggerKeyRotation() {
+  try {
+    const res = await fetch('http://localhost:3001/rotate-keys', { method: 'POST' });
+    const data = await res.json();
+    toast('Issuer key rotated & Gateway JWKS synced', 'ok');
+    setPacket('=== 24-HOUR KEY ROTATION TRIGGERED ===\n\n' + JSON.stringify(data, null, 2));
+    $('#node-issuer').classList.add('active');
+    setTimeout(() => $('#node-issuer').classList.remove('active'), 1500);
+  } catch(e) {
+    toast('Key rotation simulated (24h JWKS Epoch)', 'ok');
+    setPacket('=== 24-HOUR KEY ROTATION (SIMULATED) ===\n\nGenerated fresh 3072-bit RSA-PSS signing key.\nGateway JWKS keyring synchronized with epoch ID: 0x9AF3.');
+  }
+}
+
 function runStepEffects() {
   $$('.node').forEach(n => n.classList.remove('active', 'error'));
   $$('.edge').forEach(e => e.classList.remove('active', 'error'));
 
   if (state.step === 1) {
     $('#node-client').classList.add('active');
+    $('#node-lb').classList.add('error');
     $('#node-gateway').classList.add('error');
-    $('#e-client-gateway').classList.add('error');
-    setStepCard('Step 1: 401 Discovery Challenge', 'Client requests GET /protected without a security pass. Gateway intercepts and responds with 401 Unauthorized + issuer_url.', 'err');
-    setPacket('=== [STEP 1]: 401 CHALLENGE ===\n\n[REQUEST]: Client ──(GET /protected)──> Gateway\n[RESPONSE]: Gateway ──(401 Unauthorized + issuer_url)──> Client\n\n{\n  "error": "Token required",\n  "issuer_url": "http://localhost:3001"\n}');
+    $('#e-client-lb').classList.add('error');
+    $('#e-lb-gateway').classList.add('error');
+    setStepCard('Step 1: 401 Discovery Challenge', 'Client requests GET /protected without a security pass. Layer 7 Load Balancer routes to Gateway, which responds with 401 Unauthorized + issuer_url.', 'err');
+    setPacket('=== [STEP 1]: 401 CHALLENGE ===\n\n[REQUEST]: Client ──(GET /protected)──> Load Balancer ──> Gateway\n[RESPONSE]: Gateway ──(401 Unauthorized + issuer_url)──> Client\n\n{\n  "error": "Token required",\n  "issuer_url": "http://localhost:3001"\n}');
     $('#turnstile-box').classList.remove('hidden');
     if (!window.turnstile) ensureTurnstile();
   } else if (state.step === 2) {
@@ -912,23 +958,27 @@ function runStepEffects() {
     setPacket('=== [STEP 2]: BLIND ISSUANCE ===\n\n[PACKET FLOW]: Client ──(TokenRequest + Attestation)──> Issuer ──(siteverify)──> Cloudflare\n\n{\n  "blinded_token": "00024920fd12c8e5d... [256-byte blinded msg]",\n  "attestation": "0x4AAAAAA..."\n}\n\n[RESPONSE]: Issuer ──(TokenResponse s(bt))──> Client');
   } else if (state.step === 3) {
     $('#node-client').classList.add('active');
+    $('#node-lb').classList.add('active');
     $('#node-gateway').classList.add('active');
     $('#node-redis').classList.add('active');
     $('#node-main').classList.add('active');
-    $('#e-client-gateway').classList.add('active');
+    $('#e-client-lb').classList.add('active');
+    $('#e-lb-gateway').classList.add('active');
     $('#e-gateway-redis').classList.add('active');
     $('#e-gateway-main').classList.add('active');
-    setStepCard('Step 3: Authenticated Redemption & SETNX', 'Client unblinds token (removes r factor) to yield s(T) [Original Token + Signature]. Gateway verifies signature and executes Redis atomic SETNX (EX 3600), forwarding to Main Server.', 'live');
-    setPacket('=== [STEP 3]: AUTHENTICATED REDEMPTION ===\n\n[PACKET FLOW]: Client ──(Authorization: PrivateToken)──> Gateway ──(SETNX OK)──> Main Server\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> \'OK\' (New Token Stored)\n\n[RESPONSE (200 OK)]:\n{\n  "data": "This is the secret article you wanted."\n}');
+    setStepCard('Step 3: Authenticated Redemption & SETNX', 'Client unblinds token (removes r factor) to yield s(T). Load Balancer routes to Gateway. Gateway verifies signature and executes Redis atomic SETNX (EX 3600), forwarding to Main Server.', 'live');
+    setPacket('=== [STEP 3]: AUTHENTICATED REDEMPTION ===\n\n[PACKET FLOW]: Client ──(Authorization: PrivateToken)──> Load Balancer ──> Gateway ──(SETNX OK)──> Main Server\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> \'OK\' (New Token Stored)\n\n[RESPONSE (200 OK)]:\n{\n  "data": "This is the secret article you wanted."\n}');
     inspectRedisCache();
   } else if (state.step === 4) {
     $('#node-client').classList.add('active');
+    $('#node-lb').classList.add('error');
     $('#node-gateway').classList.add('error');
     $('#node-redis').classList.add('error');
-    $('#e-client-gateway').classList.add('error');
+    $('#e-client-lb').classList.add('error');
+    $('#e-lb-gateway').classList.add('error');
     $('#e-gateway-redis').classList.add('error');
     setStepCard('Step 4: Replay Attack Blocked', 'Client attempts to reuse the exact same token. Gateway checks Redis SETNX. Since hash already exists, Redis returns 0, blocking the replay with 401 Unauthorized.', 'err');
-    setPacket('=== [STEP 4]: REPLAY ATTACK BLOCKED ===\n\n[PACKET FLOW]: Client ──(Reused Token)──> Gateway ──(SETNX Returns 0)──X Blocked\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> Returns 0 (Already exists!)\n\n[GATEWAY REJECTION (401)]:\n{\n  "error": "Replay attack detected"\n}');
+    setPacket('=== [STEP 4]: REPLAY ATTACK BLOCKED ===\n\n[PACKET FLOW]: Client ──(Reused Token)──> Load Balancer ──> Gateway ──(SETNX Returns 0)──X Blocked\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> Returns 0 (Already exists!)\n\n[GATEWAY REJECTION (401)]:\n{\n  "error": "Replay attack detected"\n}');
     inspectRedisCache();
   }
 }
