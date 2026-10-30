@@ -5,8 +5,8 @@
 
 ---
 
-### [ ARCHITECTURE & SYSTEM WALKTHROUGH VIDEO ]
-▶ **Watch the official project presentation and architecture walkthrough**: [`PS-024_Team_GODSEC_Architecture_Walkthrough.mp4`](./PS-024_Team_GODSEC_Architecture_Walkthrough.mp4)
+# OFFICIAL PROJECT PRESENTATION & DEMO VIDEO
+## Watch on YouTube: [https://youtu.be/MD2GklwGeUY](https://youtu.be/MD2GklwGeUY)
 
 ---
 
@@ -45,7 +45,7 @@ Instead, Privacy Pass is specifically engineered to solve **Layer 7 Application 
     |                                                                |-- Cryptographic Verification ->|
     |                                                                |-- Atomic Redis SETNX Check --->|
     |                                                                |<-- 200 OK + Protected Data ----|
-    |<--- SW - Protected Data ---------------------------------------|                                |
+    |<--- 200 OK + Protected Data -----------------------------------|                                |
 ```
 
 ### The Gateway 4-Step Validation Pipeline (Crypto-First Gatekeeping)
@@ -90,7 +90,6 @@ Stress testing simulating high concurrency and 10M DAU projections yielded the f
 ├── shared/              # Shared configuration constants
 ├── docker-compose.yml   # Multi-service container orchestration
 ├── Proposed-structure-hackathon.pdf # Official project report presentation
-├── PS-024_Team_GODSEC_Architecture_Walkthrough.mp4 # Architecture explanation video
 ├── PROGRESS_REPORT.md   # 10M DAU scaling benchmarks & pipeline report
 ├── PSEUDOCODE.md        # Anti-replay cache logic snippet
 └── README.md
