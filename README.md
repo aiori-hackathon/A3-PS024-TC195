@@ -10,8 +10,6 @@ This repository contains our complete, production-grade implementation of **Priv
 
 The system solves the **Shared-IP Collateral Damage** problem (where traditional IP-rate limiting and CAPTCHAs unfairly lock out innocent users behind corporate proxies, university Wi-Fi, or carrier NATs) by decoupling user authorization from session identity using Blind RSA cryptographic tokens.
 
-🎥 **Demo & Presentation Video**: [`PS-024_Team_GODSEC_Demo.mp4`](./PS-024_Team_GODSEC_Demo.mp4)
-
 ## Architecture & Components
 Our implementation is built as four decoupled Node.js microservices backed by Redis:
 - **`issuer/`**: Handles client attestation proofs and issues RSA-PSS blind signatures (`POST /issue`).
@@ -28,7 +26,6 @@ Our implementation is built as four decoupled Node.js microservices backed by Re
 ├── shared/              # Shared configuration constants
 ├── docker-compose.yml   # Multi-service container orchestration
 ├── Proposed-structure-hackathon.pdf # Official project report presentation
-├── PS-024_Team_GODSEC_Demo.mp4      # Team presentation & walkthrough video
 ├── PROGRESS_REPORT.md   # 10M DAU scaling benchmarks & pipeline report
 ├── PSEUDOCODE.md        # Anti-replay cache logic snippet
 └── README.md
