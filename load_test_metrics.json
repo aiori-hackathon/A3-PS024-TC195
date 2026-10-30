@@ -1,13 +1,13 @@
 {
   "totalRequests": 100,
-  "successCount": 100,
-  "errorCount": 0,
-  "totalTimeSec": 0.136,
-  "throughput": 735.29,
+  "successCount": 0,
+  "errorCount": 100,
+  "totalTimeSec": 0.152,
+  "throughput": 657.89,
   "latency_ms": {
-    "avg": 9.99,
-    "min": 5.94,
-    "max": 17.57,
-    "p95": 15.87
+    "avg": 11.26,
+    "min": 7.43,
+    "max": 19.19,
+    "p95": 15.1
   }
 }

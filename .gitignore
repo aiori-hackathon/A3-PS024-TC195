@@ -1,4 +1,7 @@
 node_modules/
-issuer-private-key.json
-issuer/issuer-private-key.json
+.artifacts/
+*.log
 .DS_Store
+scale_test_*.json
+load_test_metrics.json
+shared_proxy_results.csv

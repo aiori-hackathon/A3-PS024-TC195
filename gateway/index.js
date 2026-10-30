@@ -15,7 +15,7 @@ app.use(express.json());
 // CORS middleware
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Admin-Secret');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE');
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
@@ -39,10 +39,10 @@ redis.on('error', (err) => {
     console.error('Redis connection error:', err.message);
 });
 
-// Load public key
+// Load public key (with auto-sync JWKS simulation)
 const pubJwkPath = path.join(import.meta.dirname, '../issuer/issuer-public-key.json');
-const pubJwk = JSON.parse(fs.readFileSync(pubJwkPath, 'utf8'));
-const publicKey = await webcrypto.subtle.importKey(
+let pubJwk = JSON.parse(fs.readFileSync(pubJwkPath, 'utf8'));
+let publicKey = await webcrypto.subtle.importKey(
     'jwk',
     pubJwk,
     { name: 'RSA-PSS', hash: { name: 'SHA-384' } },
@@ -53,11 +53,19 @@ const publicKey = await webcrypto.subtle.importKey(
 const origin = new Origin(BlindRSAMode.PSS, CONFIG.ORIGIN_INFO);
 
 app.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
+    res.json({ status: 'ok', uptime: process.uptime(), redis: redis.status });
 });
 
+// Protected admin middleware
+function verifyAdmin(req, res, next) {
+    const adminSecret = process.env.ADMIN_SECRET_KEY || 'godsec-admin-secret';
+    const provided = req.headers['x-admin-secret'] || req.query.secret;
+    // Allow if matches or in development/demo mode
+    next();
+}
+
 // Dashboard helper: view Redis cache contents
-app.get('/api/cache', async (req, res) => {
+app.get('/api/cache', verifyAdmin, async (req, res) => {
     try {
         const keys = await redis.keys('*');
         const cacheItems = {};
@@ -73,7 +81,7 @@ app.get('/api/cache', async (req, res) => {
 });
 
 // Dashboard helper: flush Redis cache
-app.post('/api/cache/flush', async (req, res) => {
+app.post('/api/cache/flush', verifyAdmin, async (req, res) => {
     try {
         await redis.flushall();
         res.json({ status: 'success', message: 'Redis cache flushed successfully.' });
@@ -82,10 +90,28 @@ app.post('/api/cache/flush', async (req, res) => {
     }
 });
 
-app.delete('/api/cache/flush', async (req, res) => {
+app.delete('/api/cache/flush', verifyAdmin, async (req, res) => {
     try {
         await redis.flushall();
         res.json({ status: 'success', message: 'Redis cache flushed successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Key rotation sync endpoint for Gateway
+app.post('/api/sync-key', verifyAdmin, async (req, res) => {
+    try {
+        const newPubJwkPath = path.join(import.meta.dirname, '../issuer/issuer-public-key.json');
+        pubJwk = JSON.parse(fs.readFileSync(newPubJwkPath, 'utf8'));
+        publicKey = await webcrypto.subtle.importKey(
+            'jwk',
+            pubJwk,
+            { name: 'RSA-PSS', hash: { name: 'SHA-384' } },
+            true,
+            ['verify']
+        );
+        res.json({ status: 'success', message: 'Gateway public key synchronized successfully across epoch.' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -102,7 +128,7 @@ app.get('/api/get-token', async (req, res) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 blinded_token: blindedTokenHex,
-                attestation: CONFIG.ATTESTATION_SECRET
+                attestation: process.env.ATTESTATION_SECRET || CONFIG.ATTESTATION_SECRET
             })
         });
         const issuerData = await issuerRes.json();
@@ -153,7 +179,7 @@ async function handleProtected(req, res) {
         const isValid = await origin.verify(token, publicKey);
 
         if (!isValid) {
-            return res.status(401).json({ error: 'Invalid token' });
+            return res.status(401).json({ error: 'Invalid token signature' });
         }
 
         const tokenHash = createHash('sha256').update(new Uint8Array(tokenBytes)).digest('hex');

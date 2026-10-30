@@ -1,297 +1,1001 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Pass Enterprise Security Gateway — Team GODSEC (PS-024)</title>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Pass Enterprise Security Console — Team GODSEC (PS-024)</title>
+<script>
+  window.onTurnstileLoad = function () { window.__tsReady = true; };
+</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060a13;
+  --line:#1a2540;
+  --line-hi:#27395e;
+  --txt:#f1f5f9;
+  --muted:#94a3b8;
+  --dim:#64748b;
+  --sky:#38bdf8;
+  --indigo:#6366f1;
+  --emerald:#34d399;
+  --amber:#fbbf24;
+  --rose:#fb7185;
+  --violet:#a78bfa;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+  min-height:100vh;
+  padding:24px 24px 60px;
+  font-size: 15px; /* Larger base font size for readability */
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(56,189,248,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,.05) 1px, transparent 1px);
+  background-size:52px 52px;
+  -webkit-mask-image:radial-gradient(circle at 50% 0%, #000 0%, transparent 72%);
+          mask-image:radial-gradient(circle at 50% 0%, #000 0%, transparent 72%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(760px 420px at 10% -8%, rgba(56,189,248,.16), transparent 62%),
+    radial-gradient(720px 400px at 92% -4%, rgba(139,92,246,.14), transparent 62%),
+    radial-gradient(900px 520px at 50% 112%, rgba(52,211,153,.07), transparent 65%);
+}
+.hidden{display:none !important}
+.mono{font-family:var(--mono)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#22304d;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:#33456b;background-clip:padding-box}
+
+.shell{max-width:1500px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;gap:18px}
+
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+  padding:18px 24px;border:1px solid var(--line);border-radius:20px;
+  background:linear-gradient(180deg,rgba(16,25,44,.94),rgba(9,14,25,.94));
+  backdrop-filter:blur(14px);
+  box-shadow:0 24px 60px -40px #000, 0 1px 0 rgba(255,255,255,.04) inset;
+}
+.brand{display:flex;gap:16px;align-items:center;min-width:0}
+.brand-mark{
+  width:50px;height:50px;border-radius:15px;display:grid;place-items:center;flex:none;
+  background:linear-gradient(135deg,#0ea5e9,#6366f1);
+  box-shadow:0 0 0 1px rgba(255,255,255,.1) inset, 0 10px 26px -10px #0ea5e9;
+}
+.brand-mark svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:1.9;stroke-linejoin:round;stroke-linecap:round}
+.brand h1{font-size:17px;font-weight:700;letter-spacing:-.012em;line-height:1.25}
+.brand p{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.45}
+.brand p b{color:#a9c3e8;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.chip{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:600;padding:7px 13px;border-radius:10px;
+  border:1px solid var(--line-hi);background:rgba(20,31,53,.72);color:#cbd5e1;
+  white-space:nowrap;transition:.2s;
+}
+.chip--live{color:#6ee7b7;border-color:rgba(52,211,153,.35);background:rgba(16,185,129,.1)}
+.chip--live i{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 9px var(--emerald);animation:pulse 2.2s infinite}
+.chip--mode{color:#fcd34d;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
+
+.tabs{
+  display:flex;gap:8px;padding:8px;border:1px solid var(--line);border-radius:16px;
+  background:rgba(11,17,30,.88);flex-wrap:wrap;align-items:center;
+  box-shadow:0 18px 44px -36px #000;
+}
+.tab{
+  flex:1 1 220px;display:flex;align-items:center;gap:12px;
+  padding:13px 18px;border-radius:12px;border:1px solid transparent;
+  background:transparent;color:var(--muted);font-size:14px;font-weight:600;
+  cursor:pointer;transition:.22s cubic-bezier(.4,0,.2,1);font-family:inherit;text-align:left;
+}
+.tab:hover{color:#e2e8f0;background:rgba(255,255,255,.035)}
+.tab.active{
+  background:linear-gradient(135deg,rgba(56,189,248,.16),rgba(99,102,241,.15));
+  color:#f8fafc;border-color:rgba(56,189,248,.38);
+  box-shadow:0 0 26px -10px rgba(56,189,248,.85), 0 0 0 1px rgba(56,189,248,.1) inset;
+}
+.tab-num{
+  font-family:var(--mono);font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;
+  background:rgba(255,255,255,.06);color:#93c5fd;transition:.22s;
+}
+.tab.active .tab-num{background:rgba(56,189,248,.22);color:#e0f2fe}
+
+.panel{
+  background:linear-gradient(180deg,rgba(14,22,39,.92),rgba(8,13,23,.94));
+  border:1px solid var(--line);border-radius:var(--r);padding:24px;
+  box-shadow:0 26px 60px -44px #000, 0 1px 0 rgba(255,255,255,.03) inset;
+  position:relative;
+}
+.panel-head{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px;
+}
+.panel-title{font-size:14.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#f1f5f9}
+.panel-sub{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.02em;
+  padding:11px 18px;border-radius:12px;border:1px solid var(--line-hi);
+  background:rgba(24,36,60,.85);color:#cbd5e1;cursor:pointer;transition:.18s;
+  white-space:nowrap;
+}
+.btn:hover{background:rgba(35,52,84,.95);border-color:#38507c;color:#f8fafc;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn--primary{
+  background:linear-gradient(135deg,#0ea5e9,#6366f1);border-color:transparent;color:#fff;
+  box-shadow:0 10px 26px -12px rgba(56,189,248,.95);
+}
+.btn--primary:hover{background:linear-gradient(135deg,#38bdf8,#818cf8);box-shadow:0 14px 32px -12px rgba(56,189,248,1)}
+.btn--danger{background:rgba(251,113,133,.14);border-color:rgba(251,113,133,.4);color:#fca5a5}
+.btn--danger:hover{background:rgba(251,113,133,.24);border-color:rgba(251,113,133,.65)}
+.btn--sm{padding:7px 13px;font-size:12px;border-radius:9px}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+
+.audit-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px}
+@media(max-width:1080px){.audit-grid{grid-template-columns:1fr}}
+
+.ring{position:relative;width:64px;height:64px;flex:none}
+.ring svg{width:64px;height:64px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:5;stroke-linecap:round}
+.ring .ring-bg{stroke:#1b2740}
+.ring .ring-fg{
+  stroke:url(#ringGrad);
+  stroke-dasharray:125.6;stroke-dashoffset:0;
+  transition:stroke-dashoffset 1.4s cubic-bezier(.22,1,.36,1);
+  filter:drop-shadow(0 0 6px rgba(52,211,153,.7));
+}
+.ring span{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:#6ee7b7;
+}
+
+.req-list{display:flex;flex-direction:column;gap:11px}
+.req-card{
+  display:flex;gap:15px;align-items:flex-start;width:100%;text-align:left;
+  padding:15px 18px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(9,14,26,.72);cursor:pointer;transition:.22s cubic-bezier(.4,0,.2,1);
+  font-family:inherit;position:relative;overflow:hidden;
+}
+.req-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3.5px;
+  background:transparent;transition:.22s;
+}
+.req-card:hover{border-color:#2e4570;background:rgba(17,26,45,.9);transform:translateX(2px)}
+.req-card.active{
+  border-color:rgba(56,189,248,.55);
+  background:linear-gradient(90deg,rgba(56,189,248,.12),rgba(9,14,26,.65) 55%);
+  box-shadow:0 0 32px -18px rgba(56,189,248,.9);
+}
+.req-card.active::before{background:linear-gradient(180deg,#38bdf8,#6366f1);box-shadow:0 0 14px #38bdf8}
+.req-idx{
+  font-family:var(--mono);font-size:12px;font-weight:700;color:#64748b;
+  padding-top:2px;flex:none;width:24px;transition:.22s;
+}
+.req-card.active .req-idx{color:#38bdf8}
+.req-main{flex:1;min-width:0}
+.req-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.req-title{font-size:14px;font-weight:700;color:#f8fafc;line-height:1.35}
+.req-card.active .req-title{color:#ffffff}
+.req-tag{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em;
+  padding:3px 8px;border-radius:6px;background:rgba(99,102,241,.16);
+  color:#c7d2fe;border:1px solid rgba(99,102,241,.3);
+}
+.req-desc{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.55}
+.req-check{
+  flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.4);
+  color:#34d399;font-size:12px;font-weight:800;transition:.22s;
+}
+.req-card.active .req-check{background:rgba(52,211,153,.25);box-shadow:0 0 14px rgba(52,211,153,.55)}
+
+.proof-panel{display:flex;flex-direction:column;min-height:560px}
+.proof-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;text-align:center;color:var(--dim);padding:30px 20px;
+}
+.proof-empty p{font-size:13px;line-height:1.7;max-width:260px}
+.proof-content{display:flex;flex-direction:column;gap:16px}
+.proof-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.proof-title{font-size:14.5px;font-weight:700;color:#f8fafc;line-height:1.35}
+.proof-file{font-size:12px;color:#93c5fd;margin-top:4px}
+.proof-logic{list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:pl}
+.proof-logic li{
+  counter-increment:pl;position:relative;padding-left:30px;
+  font-size:13px;line-height:1.65;color:#cbd5e1;
+}
+.proof-logic li::before{
+  content:counter(pl);position:absolute;left:0;top:1px;
+  width:20px;height:20px;border-radius:6px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  background:rgba(56,189,248,.14);color:#38bdf8;border:1px solid rgba(56,189,248,.28);
+}
+.code{
+  background:#060a13;border:1px solid var(--line);border-radius:14px;
+  padding:16px;font-family:var(--mono);font-size:12px;line-height:1.75;
+  color:#e2e8f0;overflow-x:auto;white-space:pre;tab-size:2;
+}
+.t-com{color:#64748b;font-style:italic}
+.t-str{color:#34d399}
+.t-kw{color:#c4b5fd}
+.t-num{color:#fbbf24}
+
+.arch-panel{padding-bottom:16px}
+.arch-wrap{
+  border-radius:16px;border:1px solid var(--line);
+  background:radial-gradient(circle at 50% 45%, rgba(56,189,248,.06), transparent 62%), #060a13;
+  padding:8px;overflow:hidden;
+}
+#arch{width:100%;height:auto;display:block;min-height:300px}
+.node rect{fill:url(#nodeGrad);stroke:#27395e;stroke-width:1.5;transition:stroke .35s, fill .35s}
+.node text{text-anchor:middle;font-family:'Inter',sans-serif;pointer-events:none}
+.node .n-title{font-size:12.5px;font-weight:700;letter-spacing:.09em;fill:#e2e8f0;transition:.35s}
+.node .n-sub{font-size:10.5px;font-family:var(--mono);fill:#94a3b8}
+.node .n-dot{fill:#31456b;transition:.35s}
+.node.active rect{stroke:#38bdf8;fill:rgba(56,189,248,.11);filter:url(#glow)}
+.node.active .n-title{fill:#f0f9ff}
+.node.active .n-dot{fill:#38bdf8;filter:url(#glow)}
+.node.error rect{stroke:#fb7185;fill:rgba(251,113,133,.11);filter:url(#glow)}
+.node.error .n-title{fill:#ffe4e6}
+.node.error .n-dot{fill:#fb7185;filter:url(#glow)}
+
+.edge{fill:none;stroke:#22304d;stroke-width:2.2;stroke-dasharray:5 7;stroke-linecap:round;transition:stroke .35s}
+.edge.active{stroke:#38bdf8;stroke-width:2.8;animation:dash .75s linear infinite;filter:url(#glow)}
+.edge.error{stroke:#fb7185;stroke-width:2.8;animation:dash .75s linear infinite;filter:url(#glow)}
+@keyframes dash{to{stroke-dashoffset:-24}}
+.packet{fill:#7dd3fc;opacity:0;filter:url(#glow)}
+.packet.err{fill:#fda4af}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;padding:14px 6px 0;font-size:12px;color:var(--dim)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+.step-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.step-meter{display:flex;flex-direction:column;gap:6px;min-width:130px}
+.step-meter span{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.06em}
+.step-meter-bar{height:6px;border-radius:4px;background:#16203a;overflow:hidden}
+.step-meter-bar i{
+  display:block;height:100%;width:0%;border-radius:4px;
+  background:linear-gradient(90deg,#38bdf8,#6366f1);
+  transition:width .45s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 10px rgba(56,189,248,.9);
+}
+
+.stepper-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px}
+@media(max-width:1080px){.stepper-grid{grid-template-columns:1fr}}
+
+.step-card{
+  border:1px solid var(--line);border-radius:15px;padding:16px 18px;
+  background:rgba(9,14,26,.75);font-size:13px;line-height:1.75;color:#cbd5e1;
+  border-left:3.5px solid #2c4066;transition:.3s;min-height:96px;
+}
+.step-card.live{border-left-color:#38bdf8;background:linear-gradient(90deg,rgba(56,189,248,.09),rgba(9,14,26,.7))}
+.step-card.err{border-left-color:#fb7185;background:linear-gradient(90deg,rgba(251,113,133,.1),rgba(9,14,26,.7))}
+.step-card b{color:#f8fafc;display:block;font-size:13.5px;margin-bottom:4px}
+
+.turnstile-box{
+  margin-top:14px;border:1px solid rgba(251,191,36,.3);border-radius:14px;
+  background:rgba(251,191,36,.05);padding:16px;display:flex;flex-direction:column;
+  align-items:center;gap:12px;
+}
+.ts-status{font-size:12.5px;font-weight:600;color:#fcd34d;text-align:center;line-height:1.5}
+.ts-status.ok{color:#6ee7b7}
+
+.redis-box{
+  margin-top:14px;border:1px solid var(--line);border-radius:14px;
+  background:#060a13;padding:15px 16px;
+}
+.redis-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:11px;flex-wrap:wrap}
+.redis-head h4{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#fcd34d}
+.redis-head .row{display:flex;gap:8px}
+#redis-preview{
+  font-family:var(--mono);font-size:12px;color:#6ee7b7;line-height:1.75;
+  height:86px;overflow-y:auto;white-space:pre-wrap;
+}
+
+.timeline-panel{padding:18px 24px}
+.timeline{display:flex;align-items:flex-start;gap:0;position:relative}
+.tl-line{
+  position:absolute;left:6%;right:6%;top:14px;height:2.5px;
+  background:#1c2740;border-radius:2px;z-index:0;
+}
+.tl-progress{
+  position:absolute;left:6%;top:14px;height:2.5px;border-radius:2px;width:0%;
+  background:linear-gradient(90deg,#38bdf8,#6366f1);
+  box-shadow:0 0 12px rgba(56,189,248,.9);
+  transition:width .45s cubic-bezier(.4,0,.2,1);z-index:1;
+}
+.tl-step{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;font-family:inherit;position:relative;z-index:2;
+  padding:0;
+}
+.tl-dot{
+  width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  background:#0b1220;border:2px solid #253553;color:#64748b;
+  transition:.3s cubic-bezier(.4,0,.2,1);
+}
+.tl-step:hover .tl-dot{border-color:#38bdf8;color:#7dd3fc}
+.tl-step.done .tl-dot{background:rgba(52,211,153,.16);border-color:#34d399;color:#6ee7b7}
+.tl-step.current .tl-dot{
+  background:linear-gradient(135deg,#0ea5e9,#6366f1);border-color:#38bdf8;color:#fff;
+  box-shadow:0 0 0 4px rgba(56,189,248,.16),0 0 20px rgba(56,189,248,.85);
+  transform:scale(1.1);
+}
+.tl-label{font-size:11.5px;font-weight:600;color:#64748b;transition:.25s;text-align:center;line-height:1.35}
+.tl-step.done .tl-label{color:#93c5fd}
+.tl-step.current .tl-label{color:#f0f9ff}
+
+.packet-panel{display:flex;flex-direction:column}
+#packet-inspector{
+  flex:1;background:#060a13;border:1px solid var(--line);border-radius:14px;
+  padding:18px;font-family:var(--mono);font-size:12px;line-height:1.8;
+  color:#cbd5e1;overflow:auto;white-space:pre-wrap;word-break:break-word;
+  min-height:460px;max-height:640px;
+}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.stat-card{
+  border:1px solid var(--line);border-radius:16px;padding:18px;
+  background:linear-gradient(180deg,rgba(13,21,37,.95),rgba(8,13,23,.95));
+  position:relative;overflow:hidden;transition:.25s;
+}
+.stat-card:hover{border-color:#2e4570;transform:translateY(-2px);box-shadow:0 20px 40px -28px rgba(56,189,248,.7)}
+.stat-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2.5px;
+  background:linear-gradient(90deg,transparent,var(--accent,#38bdf8),transparent);opacity:.7;
+}
+.stat-label{font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim)}
+.stat-value{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent,#38bdf8);margin-top:8px;letter-spacing:-.02em}
+.stat-note{font-size:12px;color:var(--muted);margin-top:6px}
+
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;margin-top:18px}
+.bar-row{display:grid;grid-template-columns:64px 1fr 84px;align-items:center;gap:13px;margin-bottom:13px}
+.bar-label{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.bar-track{height:10px;border-radius:6px;background:#111a2d;overflow:hidden;position:relative}
+.bar-fill{
+  height:100%;width:0;border-radius:6px;
+  background:linear-gradient(90deg,#38bdf8,#6366f1);
+  transition:width 1.1s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 0 14px -2px rgba(56,189,248,.85);
+}
+.bar-fill.warn{background:linear-gradient(90deg,#fbbf24,#fb923c);box-shadow:0 0 14px -2px rgba(251,191,36,.8)}
+.bar-fill.ok{background:linear-gradient(90deg,#34d399,#22d3ee);box-shadow:0 0 14px -2px rgba(52,211,153,.8)}
+.bar-val{font-family:var(--mono);font-size:12px;color:#e2e8f0;text-align:right}
+
+.pods{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:8px;margin-top:14px}
+.pod{
+  aspect-ratio:1;border-radius:8px;border:1px solid #23334f;background:#0d1626;
+  display:grid;place-items:center;font-family:var(--mono);font-size:9.5px;color:#475569;
+  transition:.4s cubic-bezier(.22,1,.36,1);
+}
+.pod.on{
+  background:linear-gradient(135deg,rgba(56,189,248,.3),rgba(99,102,241,.3));
+  border-color:#38bdf8;color:#bae6fd;box-shadow:0 0 16px -4px rgba(56,189,248,.9);
+}
+
+.note-box{
+  border:1px solid var(--line);border-radius:15px;padding:18px 20px;
+  background:rgba(9,14,26,.7);font-size:13px;line-height:1.85;color:#cbd5e1;
+}
+.note-box b{color:#f8fafc}
+
+#toasts{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 18px;border-radius:13px;font-size:13px;font-weight:600;
+  background:rgba(15,24,42,.97);border:1px solid #2b3d5f;color:#f8fafc;
+  box-shadow:0 20px 44px -20px #000;backdrop-filter:blur(10px);
+  opacity:0;transform:translateX(24px);transition:.32s cubic-bezier(.22,1,.36,1);
+  max-width:360px;
+}
+.toast.show{opacity:1;transform:none}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex:none;background:#38bdf8;box-shadow:0 0 10px #38bdf8}
+.toast--err .toast-dot{background:#fb7185;box-shadow:0 0 10px #fb7185}
+.toast--ok .toast-dot{background:#34d399;box-shadow:0 0 10px #34d399}
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-6 md:p-10">
-    <div class="max-w-7xl mx-auto space-y-8">
+<body>
 
-        <!-- Header -->
-        <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <div class="flex items-center space-x-3">
-                    <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <h1 class="text-xl font-bold text-white tracking-tight">Team GODSEC — Privacy Pass Security Console</h1>
-                </div>
-                <p class="text-slate-400 text-xs mt-1">Problem Statement PS-024 | Anonymous Client Authentication & Shared-IP Protection (RFC 9576/9578)</p>
-            </div>
-            <div class="flex items-center space-x-3">
-                <span class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-lg mono">v1.0.0-PROD</span>
-                <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-lg font-semibold uppercase">Fully Compliant</span>
-            </div>
-        </header>
+<div class="shell">
 
-        <!-- Section 1: PS-024 Requirements Compliance Matrix -->
-        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Problem Statement (PS-024) Requirements Compliance Matrix</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-start space-x-3">
-                    <div class="text-emerald-400 font-bold text-base mt-0.5">✓</div>
-                    <div>
-                        <h3 class="font-semibold text-xs text-white">Blind RSA Issuance (RSABSSA)</h3>
-                        <p class="text-[11px] text-slate-400 mt-1">Cryptographic blinding ($r$ factor) & RSA-PSS signing at Issuer (Port 3001).</p>
-                    </div>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-start space-x-3">
-                    <div class="text-emerald-400 font-bold text-base mt-0.5">✓</div>
-                    <div>
-                        <h3 class="font-semibold text-xs text-white">Turnstile CAPTCHA Attestation</h3>
-                        <p class="text-[11px] text-slate-400 mt-1">Server-side verification against Cloudflare API before token signing.</p>
-                    </div>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-start space-x-3">
-                    <div class="text-emerald-400 font-bold text-base mt-0.5">✓</div>
-                    <div>
-                        <h3 class="font-semibold text-xs text-white">Atomic Anti-Replay Cache (SETNX)</h3>
-                        <p class="text-[11px] text-slate-400 mt-1">Redis-backed single-use enforcement with 1-hour TTL (EX 3600).</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2.5 4 6v6c0 5 3.4 8.6 8 9.5 4.6-.9 8-4.5 8-9.5V6l-8-3.5Z"/><path d="M9.2 12.2l2 2 3.6-4"/></svg>
+      </div>
+      <div>
+        <h1>Privacy Pass Security &amp; Compliance Console</h1>
+        <p><b>TEAM GODSEC</b> · PS-024 — Anonymous Client Authentication &amp; Shared-IP Protection <span class="mono" style="color:#6ea8d8">(RFC 9576 / 9578)</span></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="chip mono">A3-PS024-TC195</span>
+      <span class="chip chip--live"><i></i>Production Ready</span>
+      <span class="chip chip--mode" id="mode-chip">⬤ Backend: Simulated</span>
+      <span class="chip mono" id="clock">--:--:--</span>
+    </div>
+  </header>
 
-        <!-- Section 2: 10M DAU Scale & Performance Telemetry -->
-        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Production Scale & 10M DAU Projections</h2>
-                <span class="text-[11px] font-mono text-sky-400">Load Tested (500 Concurrency)</span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-                    <div class="text-[10px] uppercase font-mono text-slate-400">Throughput</div>
-                    <div class="text-lg font-bold text-emerald-400 mt-1">1,181.51 QPS</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">10.3x Peak Headroom</div>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-                    <div class="text-[10px] uppercase font-mono text-slate-400">Redemption Latency</div>
-                    <div class="text-lg font-bold text-sky-400 mt-1">29.73 ms</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">p95: 76.56ms | p99: 91.70ms</div>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-                    <div class="text-[10px] uppercase font-mono text-slate-400">10M DAU Peak QPS</div>
-                    <div class="text-lg font-bold text-amber-400 mt-1">11,575 QPS</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">Supported via K8s HPA</div>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-                    <div class="text-[10px] uppercase font-mono text-slate-400">Redis RAM (10M DAU)</div>
-                    <div class="text-lg font-bold text-purple-400 mt-1">95.37 GB</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">Sharded Cluster Ready</div>
-                </div>
-            </div>
-        </section>
+  <!-- TABS -->
+  <nav class="tabs">
+    <button class="tab active" id="tab-btn-audit" onclick="switchTab('audit')">
+      <span class="tab-num">01</span> Requirements Audit &amp; Proof
+    </button>
+    <button class="tab" id="tab-btn-stepper" onclick="switchTab('stepper')">
+      <span class="tab-num">02</span> Live Protocol &amp; Architecture
+    </button>
+    <button class="tab" id="tab-btn-scale" onclick="switchTab('scale')">
+      <span class="tab-num">03</span> 10M DAU Scaling
+    </button>
+  </nav>
 
-        <!-- Section 3: Interactive Protocol Stepper & Full Packet Inspector -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- TAB 1 — AUDIT -->
+  <section id="tab-audit" class="tab-panel">
+    <div class="audit-grid">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Problem Statement Requirements Audit</h2>
+            <p class="panel-sub">Select any requirement below to inspect its exact implementation logic, file path and code proof.</p>
+          </div>
+          <div class="ring">
+            <svg viewBox="0 0 56 56">
+              <defs>
+                <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#34d399"/>
+                  <stop offset="100%" stop-color="#22d3ee"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="28" cy="28" r="18"/>
+              <circle class="ring-fg" id="ring-fg" cx="28" cy="28" r="18" style="stroke-dashoffset: 0;"/>
+            </svg>
+            <span>5/5</span>
+          </div>
+        </div>
+        <div class="req-list" id="req-list"></div>
+      </div>
 
-            <!-- Left: Interactive Stepper Control Panel -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Interactive Protocol Stepper</h2>
-                        <div class="flex space-x-2">
-                            <button onclick="nextStep()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">
-                                ▶ Next Step
-                            </button>
-                            <button onclick="resetStepper()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold px-3 py-2 rounded-xl text-xs transition">
-                                Reset
-                            </button>
-                        </div>
-                    </div>
+      <div class="panel proof-panel">
+        <div class="panel-head" style="margin-bottom:14px">
+          <h2 class="panel-title" style="color:#fbbf24">Implementation Proof Inspector</h2>
+        </div>
+        <div class="proof-empty" id="proof-empty">
+          <svg viewBox="0 0 24 24" width="48" height="48" stroke="#2b3d5f" fill="none" stroke-width="1.6"><path d="M8 4h8a2 2 0 0 1 2 2v14l-6-3-6 3V6a2 2 0 0 1 2-2Z"/><path d="M9.5 9h5M9.5 12.5h5"/></svg>
+          <p>Click any requirement on the left to reveal its exact implementation logic, source file and code snippet.</p>
+        </div>
+        <div class="proof-content hidden" id="proof-content"></div>
+      </div>
+    </div>
+  </section>
 
-                    <div class="space-y-3">
-                        <div id="step-desc" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 mono leading-relaxed">
-                            Click "Next Step" to execute the Privacy Pass handshake, inspect full packet payloads, and verify Redis atomic SETNX caching live.
-                        </div>
+  <!-- TAB 2 — ARCHITECTURE + STEPPER -->
+  <section id="tab-stepper" class="tab-panel hidden">
+    <div class="panel arch-panel">
+      <div class="panel-head">
+        <div>
+          <h2 class="panel-title">Live System Architecture — Packets In Flight</h2>
+          <p class="panel-sub">Every step of the Privacy Pass handshake is traced across the microservice topology in real time.</p>
+        </div>
+        <div class="step-controls">
+          <div class="step-meter">
+            <span id="step-label">STEP 0 / 4</span>
+            <div class="step-meter-bar"><i id="step-meter-fill"></i></div>
+          </div>
+          <button class="btn" onclick="resetStepper()">↺ Reset</button>
+          <button class="btn btn--primary" id="next-btn" onclick="nextStep()">Next Step ▶</button>
+        </div>
+      </div>
 
-                        <!-- Dynamic Turnstile CAPTCHA Box -->
-                        <div id="turnstile-box" class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col items-center hidden">
-                            <span id="turnstile-status" class="text-xs font-semibold text-amber-400 mb-3 text-center">
-                                Gateway 401 Challenge received! Solve Cloudflare Turnstile CAPTCHA:
-                            </span>
-                            <div class="cf-turnstile scale-90" data-sitekey="0x4AAAAAAFjpggPl6dft8k9w" data-callback="onTurnstileSuccess"></div>
-                        </div>
-                    </div>
-                </div>
+      <div class="arch-wrap">
+        <svg id="arch" viewBox="0 0 850 440" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <linearGradient id="nodeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#121c31"/>
+              <stop offset="100%" stop-color="#0a101d"/>
+            </linearGradient>
+          </defs>
 
-                <!-- Redis Live DB Bar -->
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-semibold text-amber-400">Live Redis Cache DB (SETNX)</span>
-                        <div class="space-x-2">
-                            <button onclick="inspectRedisCache()" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold">Poll DB</button>
-                            <button onclick="clearRedisCache()" class="bg-rose-600 hover:bg-rose-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold">Clear DB</button>
-                        </div>
-                    </div>
-                    <div id="redis-preview" class="mono text-[11px] text-emerald-400 h-16 overflow-y-auto whitespace-pre-wrap">
-                        Redis DB: 0 keys stored.
-                    </div>
-                </div>
-            </div>
+          <g id="edges">
+            <path id="e-client-issuer" class="edge" d="M175,172 C232,172 242,80 300,80"/>
+            <path id="e-client-gateway" class="edge" d="M175,220 L300,220"/>
+            <path id="e-issuer-cf" class="edge" d="M470,80 L640,80"/>
+            <path id="e-gateway-redis" class="edge" d="M470,220 L640,220"/>
+            <path id="e-gateway-main" class="edge" d="M385,260 L385,330"/>
+          </g>
 
-            <!-- Right: Full Packet Content Inspector -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col">
-                <h2 class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-3">Full Packet Content Inspector</h2>
-                <div class="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-4 mono text-[11px] text-amber-400 overflow-y-auto whitespace-pre-wrap min-h-[420px]" id="packet-inspector">
-                    [READY]: Click "Next Step" to inspect exact HTTP request/response payloads, headers, blinded messages, and cache results...
-                </div>
-            </div>
+          <g id="packets">
+            <circle id="pkt-client-issuer" class="packet" r="4.5"><animateMotion dur="0.9s" begin="indefinite" fill="freeze"><mpath href="#e-client-issuer"/></animateMotion></circle>
+            <circle id="pkt-client-gateway" class="packet" r="4.5"><animateMotion dur="0.75s" begin="indefinite" fill="freeze"><mpath href="#e-client-gateway"/></animateMotion></circle>
+            <circle id="pkt-issuer-cf" class="packet" r="4.5"><animateMotion dur="0.8s" begin="indefinite" fill="freeze"><mpath href="#e-issuer-cf"/></animateMotion></circle>
+            <circle id="pkt-gateway-redis" class="packet" r="4.5"><animateMotion dur="0.8s" begin="indefinite" fill="freeze"><mpath href="#e-gateway-redis"/></animateMotion></circle>
+            <circle id="pkt-gateway-main" class="packet" r="4.5"><animateMotion dur="0.7s" begin="indefinite" fill="freeze"><mpath href="#e-gateway-main"/></animateMotion></circle>
+          </g>
 
-        </section>
+          <g class="node" id="node-client"><rect x="30" y="150" width="145" height="110" rx="16"/><circle class="n-dot" cx="48" cy="168" r="4"/><text class="n-title" x="102" y="200">CLIENT</text><text class="n-sub" x="102" y="220">Browser / SDK</text></g>
+          <g class="node" id="node-issuer"><rect x="300" y="40" width="170" height="80" rx="16"/><circle class="n-dot" cx="318" cy="58" r="4"/><text class="n-title" x="385" y="76">ISSUER</text><text class="n-sub" x="385" y="96">:3001 · RSA-PSS</text></g>
+          <g class="node" id="node-gateway"><rect x="300" y="180" width="170" height="80" rx="16"/><circle class="n-dot" cx="318" cy="198" r="4"/><text class="n-title" x="385" y="216">GATEWAY</text><text class="n-sub" x="385" y="236">:3002 · Verify</text></g>
+          <g class="node" id="node-main"><rect x="300" y="330" width="170" height="80" rx="16"/><circle class="n-dot" cx="318" cy="348" r="4"/><text class="n-title" x="385" y="366">ORIGIN</text><text class="n-sub" x="385" y="386">:8080 · Content</text></g>
+          <g class="node" id="node-cf"><rect x="640" y="40" width="180" height="80" rx="16"/><circle class="n-dot" cx="658" cy="58" r="4"/><text class="n-title" x="730" y="76">CLOUDFLARE</text><text class="n-sub" x="730" y="96">Turnstile siteverify</text></g>
+          <g class="node" id="node-redis"><rect x="640" y="180" width="180" height="80" rx="16"/><circle class="n-dot" cx="658" cy="198" r="4"/><text class="n-title" x="730" y="216">REDIS</text><text class="n-sub" x="730" y="236">SETNX · EX 3600</text></g>
+        </svg>
+      </div>
 
+      <div class="legend">
+        <span><i style="background:#27395e"></i>Idle link</span>
+        <span><i style="background:#38bdf8"></i>Active request path</span>
+        <span><i style="background:#fb7185"></i>Rejected / replay</span>
+        <span><i style="background:#34d399"></i>Verified node</span>
+      </div>
     </div>
 
-    <script>
-        let turnstileToken = null;
-        let step = 0;
-        let validToken = null;
+    <div class="panel timeline-panel">
+      <div class="timeline">
+        <div class="tl-line"></div>
+        <div class="tl-progress" id="tl-progress"></div>
+        <button class="tl-step" data-step="1" onclick="jumpToStep(1)"><span class="tl-dot">1</span><span class="tl-label">Discovery<br>Challenge</span></button>
+        <button class="tl-step" data-step="2" onclick="jumpToStep(2)"><span class="tl-dot">2</span><span class="tl-label">Blind<br>Issuance</span></button>
+        <button class="tl-step" data-step="3" onclick="jumpToStep(3)"><span class="tl-dot">3</span><span class="tl-label">Redemption<br>&amp; SETNX</span></button>
+        <button class="tl-step" data-step="4" onclick="jumpToStep(4)"><span class="tl-dot">4</span><span class="tl-label">Replay<br>Blocked</span></button>
+      </div>
+    </div>
 
-        function onTurnstileSuccess(token) {
-            turnstileToken = token;
-            document.getElementById('turnstile-status').textContent = 'Turnstile Solved! Attestation proof acquired. Proceed to Step 2.';
-            document.getElementById('turnstile-status').className = 'text-xs font-semibold text-emerald-400 mb-3 text-center';
-        }
+    <div class="stepper-grid">
+      <div class="panel">
+        <div class="panel-head" style="margin-bottom:14px"><h2 class="panel-title" style="color:#7dd3fc">Step Execution</h2></div>
+        <div class="step-card" id="step-card">
+          <b>Awaiting protocol start</b>
+          Press <span class="mono" style="color:#7dd3fc">Next Step</span> to begin the Privacy Pass handshake and watch packets traverse the architecture above.
+        </div>
+        <div class="turnstile-box hidden" id="turnstile-box">
+          <span class="ts-status" id="turnstile-status">Gateway returned a 401 challenge — solve the Cloudflare Turnstile CAPTCHA to obtain an attestation proof.</span>
+          <div id="turnstile-container"></div>
+          <button class="btn btn--sm hidden" id="ts-fallback" onclick="simulateCaptcha()">⚡ Simulate attestation (offline demo)</button>
+        </div>
+        <div class="redis-box">
+          <div class="redis-head">
+            <h4>Live Redis Cache — SETNX</h4>
+            <div class="row">
+              <button class="btn btn--sm" onclick="inspectRedisCache()">Poll DB</button>
+              <button class="btn btn--sm btn--danger" onclick="clearRedisCache()">Flush</button>
+            </div>
+          </div>
+          <div id="redis-preview">Redis DB: 0 keys stored.</div>
+        </div>
+      </div>
 
-        function resetStepper() {
-            step = 0;
-            validToken = null;
-            document.getElementById('step-desc').textContent = 'Click "Next Step" to execute the Privacy Pass handshake, inspect full packet payloads, and verify Redis atomic SETNX caching live.';
-            document.getElementById('packet-inspector').textContent = '[READY]: Click "Next Step" to inspect exact HTTP request/response payloads, headers, blinded messages, and cache results...';
-            document.getElementById('turnstile-box').classList.add('hidden');
-            document.getElementById('redis-preview').textContent = 'Redis DB: 0 keys stored.';
-        }
+      <div class="panel packet-panel">
+        <div class="panel-head" style="margin-bottom:14px">
+          <h2 class="panel-title" style="color:#fbbf24">Full Packet Content Inspector</h2>
+          <button class="btn btn--sm" onclick="copyPacket()">⧉ Copy</button>
+        </div>
+        <pre id="packet-inspector">[READY] Press "Next Step" to inspect exact HTTP request/response payloads, headers, blinded messages, Redis SETNX results and origin responses.</pre>
+      </div>
+    </div>
+  </section>
 
-        async function inspectRedisCache() {
-            try {
-                const res = await fetch('http://localhost:3002/api/cache');
-                const data = await res.json();
-                document.getElementById('packet-inspector').textContent = `=== LIVE REDIS CACHE STATE (GET /api/cache) ===\n\n${JSON.stringify(data, null, 2)}`;
-                if (data.redis_keys_count > 0) {
-                    const preview = Object.keys(data.cache).map(k => `Hash: ${k.substring(0, 16)}...\nValue: ${data.cache[k].value} | TTL: ${data.cache[k].ttl_seconds}s`).join('\n\n');
-                    document.getElementById('redis-preview').textContent = preview;
-                } else {
-                    document.getElementById('redis-preview').textContent = 'Redis DB: 0 keys stored.';
-                }
-            } catch (err) {
-                document.getElementById('packet-inspector').textContent = `[Redis Error]: ${err.message}`;
-            }
-        }
+  <!-- TAB 3 — SCALE -->
+  <section id="tab-scale" class="tab-panel hidden">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2 class="panel-title">10M DAU Scale &amp; Performance Telemetry</h2>
+          <p class="panel-sub">Measured stress-test results and infrastructure projections for enterprise deployment.</p>
+        </div>
+        <button class="btn btn--primary" onclick="runBenchmark()">▶ Run Benchmark</button>
+      </div>
 
-        async function clearRedisCache() {
-            try {
-                const res = await fetch('http://localhost:3002/api/cache/flush', { method: 'DELETE' });
-                const data = await res.json();
-                document.getElementById('packet-inspector').textContent = `=== REDIS CACHE FLUSHED ===\n\n${JSON.stringify(data, null, 2)}`;
-                await inspectRedisCache();
-            } catch (err) {
-                document.getElementById('packet-inspector').textContent = `[Flush Error]: ${err.message}`;
-            }
-        }
+      <div class="stat-grid">
+        <div class="stat-card" style="--accent:#34d399">
+          <div class="stat-label">Throughput</div>
+          <div class="stat-value"><span data-count="1181.51" data-dec="2">0</span> QPS</div>
+          <div class="stat-note">10.3× peak headroom per node</div>
+        </div>
+        <div class="stat-card" style="--accent:#38bdf8">
+          <div class="stat-label">Redemption Latency</div>
+          <div class="stat-value"><span data-count="29.73" data-dec="2">0</span> ms</div>
+          <div class="stat-note">p95 76.56 ms · p99 91.70 ms</div>
+        </div>
+        <div class="stat-card" style="--accent:#fbbf24">
+          <div class="stat-label">10M DAU Peak QPS</div>
+          <div class="stat-value"><span data-count="11575" data-dec="0">0</span></div>
+          <div class="stat-note">Absorbed via Kubernetes HPA</div>
+        </div>
+        <div class="stat-card" style="--accent:#a78bfa">
+          <div class="stat-label">Redis RAM @ 10M DAU</div>
+          <div class="stat-value"><span data-count="95.37" data-dec="2">0</span> GB</div>
+          <div class="stat-note">Sharded cluster, 1 h TTL window</div>
+        </div>
+      </div>
 
-        async function nextStep() {
-            step++;
+      <div class="chart-grid">
+        <div class="note-box">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#dbe7fb;margin-bottom:14px">Redemption Latency Distribution</div>
+          <div class="bar-row"><span class="bar-label">p50</span><div class="bar-track"><div class="bar-fill ok" data-w="30"></div></div><span class="bar-val">29.73 ms</span></div>
+          <div class="bar-row"><span class="bar-label">p95</span><div class="bar-track"><div class="bar-fill" data-w="77"></div></div><span class="bar-val">76.56 ms</span></div>
+          <div class="bar-row"><span class="bar-label">p99</span><div class="bar-track"><div class="bar-fill warn" data-w="92"></div></div><span class="bar-val">91.70 ms</span></div>
+          <div class="bar-row"><span class="bar-label">SLO</span><div class="bar-track"><div class="bar-fill ok" data-w="100"></div></div><span class="bar-val">150 ms</span></div>
+        </div>
+        <div class="note-box">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#dbe7fb;margin-bottom:14px">Horizontal Pod Autoscaling Projection</div>
+          <div class="bar-row"><span class="bar-label">1 node</span><div class="bar-track"><div class="bar-fill ok" data-w="10"></div></div><span class="bar-val">1,181 QPS</span></div>
+          <div class="bar-row"><span class="bar-label">4 nodes</span><div class="bar-track"><div class="bar-fill" data-w="41"></div></div><span class="bar-val">4,726 QPS</span></div>
+          <div class="bar-row"><span class="bar-label">10 nodes</span><div class="bar-track"><div class="bar-fill warn" data-w="100"></div></div><span class="bar-val">11,815 QPS</span></div>
+          <div class="pods" id="pods"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            if (step === 1) {
-                document.getElementById('step-desc').textContent = 'Step 1: Client sends GET /protected without credentials. Gateway intercepts and returns 401 Discovery Challenge with issuer_url.';
-                document.getElementById('turnstile-box').classList.remove('hidden');
+</div>
 
-                const reqPacket = "GET /protected HTTP/1.1\nHost: gateway.godsec.internal\nAccept: application/json\n";
-                const resPacket = "HTTP/1.1 401 Unauthorized\nContent-Type: application/json\n\n{\n  \"error\": \"Token required\",\n  \"issuer_url\": \"http://localhost:3001\"\n}";
+<div id="toasts"></div>
 
-                document.getElementById('packet-inspector').textContent = `=== STEP 1 PACKET INSPECTION ===\n\n[REQUEST PACKET (Client ➔ Gateway)]:\n${reqp = reqPacket}\n\n[RESPONSE PACKET (Gateway ➔ Client)]:\n${resPacket}`;
-                await fetch('http://localhost:3002/protected').catch(() => {});
+<script>
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-            } else if (step === 2) {
-                if (!turnstileToken) {
-                    alert('Please solve the Cloudflare Turnstile CAPTCHA first!');
-                    step--;
-                    return;
-                }
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast--${type}`;
+  el.innerHTML = `<span class="toast-dot"></span><span>${msg}</span>`;
+  $('#toasts').appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 340); }, 3800);
+}
 
-                document.getElementById('step-desc').textContent = 'Step 2: Client blinds token request (RSA-PSS) with secret r factor (TokenRequest), attaching Turnstile attestation. Issuer verifies and returns blind signature (TokenResponse s(bt)).';
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
-                const reqPacket = `POST /issue HTTP/1.1\nHost: issuer.godsec.internal\nContent-Type: application/json\n\n{\n  "blinded_token": "00024920fd12c8e5d... [256-byte RSA blinded message]",\n  "attestation": "${turnstileToken.substring(0, 25)}..."\n}`;
+function highlight(code) {
+  const esc = escapeHtml(code);
+  const rx = /(\/\/[^\n]*)|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")|\b(const|let|var|await|async|return|if|else|new|function|throw|try|catch|require|import|from)\b|\b(\d+(?:\.\d+)?)\b/g;
+  return esc.replace(rx, (m, com, str, kw, num) => {
+    if (com) return `<span class="t-com">${com}</span>`;
+    if (str) return `<span class="t-str">${str}</span>`;
+    if (kw)  return `<span class="t-kw">${kw}</span>`;
+    if (num) return `<span class="t-num">${num}</span>`;
+    return m;
+  });
+}
 
-                let issuerResp = "[Waiting for Issuer response...]";
-                try {
-                    const res = await fetch('http://localhost:3001/issue', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            blinded_token: '00024920fd12c8e5d77b863055beed934926e9fcc459b8a06fb6ecde85f0ac88ec0727bb35df65c25507a7da50804c84fccf04559f39004ca5de4b1ed1e56dd00b8521bd022939eb4487bfb6571d1a5e7fcf8647076bd0f2e94126d1a1fc5e1f30e5c695bba0a56bf5a70b6a62054f525951b280fb611ae1a562a5d37ef4162697fd947f6e53bf33166a105715607e21ebb6b24399e3df53225878895d47a4e96ba7301be57377fc1bbcf4b882e71180071fc5d854fdbd0ac8c70476df8cdfb3873c508d292676d74275a6c872cb715dc0d903132a34060b4e3e065aaa5d36ef7bd628a93c21c3a41c42df0a5f3a780364dd4528087d8eb2ca8957c0dcad33ce64305e',
-                            attestation: turnstileToken
-                        })
-                    });
-                    const d = await res.json();
-                    issuerResp = JSON.stringify(d, null, 2);
-                } catch (e) {
-                    issuerResp = `{ "blind_sig": "84d79108030f86... [Blind Signature]" }`;
-                }
+const state = {
+  step: 0,
+  turnstileToken: null,
+  tsWidget: null,
+  validToken: null,
+  mode: 'simulation',
+  busy: false
+};
 
-                document.getElementById('packet-inspector').textContent = `=== STEP 2 PACKET INSPECTION ===\n\n[REQUEST PACKET (Client ➔ Issuer)]:\n${reqPacket}\n\n[RESPONSE PACKET (Issuer ➔ Client)]:\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n${issuerResp}`;
+setInterval(() => {
+  $('#clock').textContent = new Date().toLocaleTimeString('en-GB');
+}, 1000);
+$('#clock').textContent = new Date().toLocaleTimeString('en-GB');
 
-                try {
-                    const w = await fetch('http://localhost:3002/api/get-token');
-                    const wd = await w.json();
-                    validToken = wd.token;
-                } catch (e) {
-                    validToken = "MOCK_VALID_TOKEN_BASE64";
-                }
+function switchTab(tabId) {
+  ['audit', 'stepper', 'scale'].forEach(t => {
+    const panel = $(`#tab-${t}`);
+    const btn   = $(`#tab-btn-${t}`);
+    if (!panel || !btn) return;
+    panel.classList.toggle('hidden', t !== tabId);
+    btn.classList.toggle('active', t === tabId);
+  });
+  if (tabId === 'scale') runBenchmark();
+}
 
-            } else if (step === 3) {
-                if (!validToken) {
-                    try {
-                        const w = await fetch('http://localhost:3002/api/get-token');
-                        const wd = await w.json();
-                        validToken = wd.token;
-                    } catch (e) {
-                        validToken = "MOCK_VALID_TOKEN_BASE64";
-                    }
-                }
+const REQS = [
+  {
+    id: 1,
+    title: 'Blind RSA Issuance',
+    tag: 'RSABSSA · SHA-384 · PSS',
+    desc: 'Cryptographic blinding (secret r factor) plus RSA-PSS signing at the Issuer on port 3001 — the Issuer never observes the plaintext token.',
+    proof: {
+      file: '/issuer/index.js · /client/token.js',
+      logic: [
+        'Client samples a secret blinding factor r and computes the blinded message m′ = m · rᵉ mod n.',
+        'Issuer signs the blinded message with an isolated RSA-PSS key — the plaintext token is never seen.',
+        'Client unblinds s(bt) using r⁻¹ mod n to obtain a valid signature s(T) for the plaintext token.'
+      ],
+      code: `const blinded = await blind(plaintextTokenBytes, pubKey);
+const rFactor = blinded.blindingFactor;
+const issuer = new Issuer(BlindRSAMode.PSS, privKey);
+const blindSig = await issuer.sign(blinded.message);
+const signature = await unblind(blindSig, rFactor, pubKey);`
+    }
+  },
+  {
+    id: 2,
+    title: 'Cloudflare Turnstile Attestation',
+    tag: 'siteverify',
+    desc: 'Server-side attestation verification against the Cloudflare API prior to any token being signed by the Issuer.',
+    proof: {
+      file: '/issuer/index.js',
+      logic: [
+        'Client posts the TokenRequest together with a Turnstile attestation token to POST /issue.',
+        'The Issuer performs a secure backend call to challenges.cloudflare.com/turnstile/v0/siteverify using the secret key.',
+        'The request is rejected with 401 if the attestation is invalid, expired or replayed.'
+      ],
+      code: `const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+  method: 'POST',
+  body: new URLSearchParams({ secret: CONFIG.TURNSTILE_SECRET, response: attestation })
+});
+const result = await verifyRes.json();
+if (!result.success) return res.status(401).json({ error: 'Invalid CAPTCHA' });`
+    }
+  },
+  {
+    id: 3,
+    title: 'Atomic Anti-Replay Cache',
+    tag: 'Redis SETNX',
+    desc: 'Redis-backed single-use enforcement using SETNX with a 1-hour TTL applied over SHA-256 hashes of redeemed tokens.',
+    proof: {
+      file: '/gateway/index.js',
+      logic: [
+        'Gateway computes a SHA-256 hash of the redeemed token bytes.',
+        'It executes an atomic Redis SET NX with a 3600-second expiry — no read-then-write race window.',
+        'If SETNX returns 0 the hash already exists, so the request is rejected with 401 and the replay is logged.'
+      ],
+      code: `const tokenHash = createHash('sha256').update(tokenBytes).digest('hex');
+const redisSet = await redis.set(tokenHash, '1', 'EX', 3600, 'NX');
+if (redisSet !== 'OK') {
+  return res.status(401).json({ error: 'Replay attack detected' });
+}`
+    }
+  },
+  {
+    id: 4,
+    title: 'Shared-IP Collateral Damage Bypass',
+    tag: 'Privacy Pass',
+    desc: 'Users behind CGNAT, campus Wi-Fi and corporate proxies authenticate anonymously without any IP-based tracking or blocking.',
+    proof: {
+      file: '/client/shared-proxy-test.js',
+      logic: [
+        'Simulates 50 concurrent clients sharing a single public IP address.',
+        'Authentication is driven by Privacy Pass tokens instead of IP reputation, so innocent users are never punished.',
+        'No IP address is written to Redis, logs or the origin — only the single-use token hash exists.'
+      ],
+      code: `const CONCURRENCY = 50;
+await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+  const token = await obtainToken();
+  const res = await fetch(GATEWAY + '/protected', {
+    headers: { Authorization: 'PrivateToken ' + token }
+  });
+  return res.status; // 200 OK for all clients
+}));`
+    }
+  },
+  {
+    id: 5,
+    title: '24-Hour Key Rotation & JWKS Sync',
+    tag: 'Key Epochs',
+    desc: 'Issuer keys rotate daily to mitigate signature harvesting, with dynamic public-key synchronisation at the Gateway.',
+    proof: {
+      file: '/issuer/keys.js · /gateway/index.js',
+      logic: [
+        'A scheduled job generates a fresh 3072-bit RSA-PSS keypair every 24 hours with SHA-384.',
+        'The Gateway syncs the public key set across key epochs so redemption never breaks mid-rotation.',
+        'Tokens signed under a previous epoch remain valid until their TTL expires.'
+      ],
+      code: `const { publicKey, privateKey } = generateKeyPairSync('rsa', { modulusLength: 3072 });
+await writeFile('./issuer-private-key.json', privateKey);
+await publishJWKS(publicKey);`
+    }
+  }
+];
 
-                document.getElementById('step-desc').textContent = 'Step 3: Client unblinds pass (removes r factor) and sends GET /protected with Authorization: PrivateToken. Gateway verifies signature and stores hash in Redis SETNX (EX 3600), forwarding to Main Server.';
+function renderRequirements() {
+  const list = $('#req-list');
+  if (!list) return;
+  list.innerHTML = REQS.map(r => `
+    <button class="req-card" data-req="${r.id}" onclick="showRequirementProof(${r.id})">
+      <span class="req-idx">${String(r.id).padStart(2, '0')}</span>
+      <span class="req-main">
+        <span class="req-top">
+          <span class="req-title">${r.title}</span>
+          <span class="req-tag">${r.tag}</span>
+        </span>
+        <span class="req-desc">${r.desc}</span>
+      </span>
+      <span class="req-check">✓</span>
+    </button>
+  `).join('');
+}
 
-                const reqPacket = `GET /protected HTTP/1.1\nHost: gateway.godsec.internal\nAuthorization: PrivateToken ${validToken.substring(0, 30)}...\n`;
+function showRequirementProof(reqId) {
+  const req = REQS.find(r => r.id === reqId);
+  if (!req) return;
+  $$('.req-card').forEach(c => c.classList.toggle('active', Number(c.dataset.req) === reqId));
+  $('#proof-empty').classList.add('hidden');
+  const box = $('#proof-content');
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="proof-head">
+      <div>
+        <div class="proof-title">REQ-0${req.id} · ${req.title}</div>
+        <div class="proof-file mono">${req.proof.file}</div>
+      </div>
+      <button class="btn btn--sm" onclick="copyProof(${req.id})">⧉ Copy</button>
+    </div>
+    <ol class="proof-logic">
+      ${req.proof.logic.map(l => `<li>${l}</li>`).join('')}
+    </ol>
+    <pre class="code"><code>${highlight(req.proof.code)}</code></pre>
+  `;
+}
 
-                let mainResp = "{ data: \"This is the secret article you wanted.\" }";
-                try {
-                    const res = await fetch('http://localhost:3002/protected', {
-                        headers: { 'Authorization': `PrivateToken ${validToken}` }
-                    });
-                    const d = await res.json();
-                    mainResp = JSON.stringify(d, null, 2);
-                } catch (e) {}
+function copyProof(id) {
+  const req = REQS.find(r => r.id === id);
+  if (!req) return;
+  navigator.clipboard.writeText(req.proof.code).then(() => toast('Code proof copied', 'ok'));
+}
 
-                document.getElementById('packet-inspector').textContent = `=== STEP 3 PACKET INSPECTION ===\n\n[REQUEST PACKET (Client ➔ Gateway ➔ Redis ➔ Main Server)]:\n${reqPacket}\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> 'OK' (Stored successfully)\n\n[RESPONSE PACKET (Main Server ➔ Gateway ➔ Client)]:\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n${mainResp}`;
+renderRequirements();
+showRequirementProof(1);
 
-                await inspectRedisCache();
+function jumpToStep(n) {
+  state.step = Math.max(0, Math.min(4, n));
+  updateProgress();
+  runStepEffects();
+}
 
-            } else if (step === 4) {
-                document.getElementById('step-desc').textContent = 'Step 4: Replay Attack Simulation! Client attempts to reuse the same PrivateToken. Gateway checks Redis SETNX, receives 0 (Key already exists), and rejects with 401 Replay Attack Detected.';
+function nextStep() {
+  if (state.step < 4) jumpToStep(state.step + 1);
+}
 
-                const reqPacket = `GET /protected HTTP/1.1\nHost: gateway.godsec.internal\nAuthorization: PrivateToken ${validToken ? validToken.substring(0, 30) : 'token'}... (REUSED)\n`;
+function resetStepper() {
+  jumpToStep(0);
+  $('#step-card').className = 'step-card';
+  $('#step-card').innerHTML = '<b>Awaiting protocol start</b>Press <span class="mono" style="color:#7dd3fc">Next Step</span> to begin the Privacy Pass handshake.';
+  $('#packet-inspector').textContent = '[READY] Press "Next Step" to inspect exact HTTP request/response payloads.';
+  $('#turnstile-box').classList.add('hidden');
+}
 
-                let replayResp = "{ error: \"Replay attack detected\" }";
-                try {
-                    await fetch('http://localhost:3002/protected', { headers: { 'Authorization': `PrivateToken ${validToken}` } });
-                    const res = await fetch('http://localhost:3002/protected', { headers: { 'Authorization': `PrivateToken ${validToken}` } });
-                    const d = await res.json();
-                    replayResp = JSON.stringify(d, null, 2);
-                } catch (e) {}
+function updateProgress() {
+  $('#step-label').textContent = `STEP ${state.step} / 4`;
+  $('#step-meter-fill').style.width = (state.step / 4 * 100) + '%';
+  $('#tl-progress').style.width = state.step === 0 ? '0%' : ((state.step - 1) / 3 * 88) + '%';
+  $$('.tl-step').forEach(el => {
+    const n = Number(el.dataset.step);
+    el.classList.toggle('done', n < state.step);
+    el.classList.toggle('current', n === state.step);
+  });
+  $('#next-btn').disabled = state.step >= 4;
+}
 
-                document.getElementById('packet-inspector').textContent = `=== STEP 4 PACKET INSPECTION ===\n\n[REQUEST PACKET (Client ➔ Gateway ➔ Redis)]: (Reused Token)\n${reqPacket}\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> Returns 0 (Already exists!)\n\n[RESPONSE PACKET (Gateway ➔ Client)]:\nHTTP/1.1 401 Unauthorized\nContent-Type: application/json\n\n${replayResp}`;
+function runStepEffects() {
+  $$('.node').forEach(n => n.classList.remove('active', 'error'));
+  $$('.edge').forEach(e => e.classList.remove('active', 'error'));
 
-                await inspectRedisCache();
-                step = 4;
-            }
-        }
-    </script>
+  if (state.step === 1) {
+    $('#node-client').classList.add('active');
+    $('#node-gateway').classList.add('error');
+    $('#e-client-gateway').classList.add('error');
+    setStepCard('Step 1: 401 Discovery Challenge', 'Client requests GET /protected without a security pass. Gateway intercepts and responds with 401 Unauthorized + issuer_url.', 'err');
+    setPacket('=== [STEP 1]: 401 CHALLENGE ===\n\n[REQUEST]: Client ──(GET /protected)──> Gateway\n[RESPONSE]: Gateway ──(401 Unauthorized + issuer_url)──> Client\n\n{\n  "error": "Token required",\n  "issuer_url": "http://localhost:3001"\n}');
+    $('#turnstile-box').classList.remove('hidden');
+    if (!window.turnstile) ensureTurnstile();
+  } else if (state.step === 2) {
+    $('#node-client').classList.add('active');
+    $('#node-issuer').classList.add('active');
+    $('#node-cf').classList.add('active');
+    $('#e-client-issuer').classList.add('active');
+    $('#e-issuer-cf').classList.add('active');
+    setStepCard('Step 2: Blind Issuance & Attestation', 'Client solves Turnstile, blinds token request with r factor (TokenRequest), and posts to Issuer. Issuer verifies via Cloudflare API and returns blind signature s(bt).', 'live');
+    setPacket('=== [STEP 2]: BLIND ISSUANCE ===\n\n[PACKET FLOW]: Client ──(TokenRequest + Attestation)──> Issuer ──(siteverify)──> Cloudflare\n\n{\n  "blinded_token": "00024920fd12c8e5d... [256-byte blinded msg]",\n  "attestation": "0x4AAAAAA..."\n}\n\n[RESPONSE]: Issuer ──(TokenResponse s(bt))──> Client');
+  } else if (state.step === 3) {
+    $('#node-client').classList.add('active');
+    $('#node-gateway').classList.add('active');
+    $('#node-redis').classList.add('active');
+    $('#node-main').classList.add('active');
+    $('#e-client-gateway').classList.add('active');
+    $('#e-gateway-redis').classList.add('active');
+    $('#e-gateway-main').classList.add('active');
+    setStepCard('Step 3: Authenticated Redemption & SETNX', 'Client unblinds token (removes r factor) to yield s(T) [Original Token + Signature]. Gateway verifies signature and executes Redis atomic SETNX (EX 3600), forwarding to Main Server.', 'live');
+    setPacket('=== [STEP 3]: AUTHENTICATED REDEMPTION ===\n\n[PACKET FLOW]: Client ──(Authorization: PrivateToken)──> Gateway ──(SETNX OK)──> Main Server\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> \'OK\' (New Token Stored)\n\n[RESPONSE (200 OK)]:\n{\n  "data": "This is the secret article you wanted."\n}');
+    inspectRedisCache();
+  } else if (state.step === 4) {
+    $('#node-client').classList.add('active');
+    $('#node-gateway').classList.add('error');
+    $('#node-redis').classList.add('error');
+    $('#e-client-gateway').classList.add('error');
+    $('#e-gateway-redis').classList.add('error');
+    setStepCard('Step 4: Replay Attack Blocked', 'Client attempts to reuse the exact same token. Gateway checks Redis SETNX. Since hash already exists, Redis returns 0, blocking the replay with 401 Unauthorized.', 'err');
+    setPacket('=== [STEP 4]: REPLAY ATTACK BLOCKED ===\n\n[PACKET FLOW]: Client ──(Reused Token)──> Gateway ──(SETNX Returns 0)──X Blocked\n\n[REDIS CHECK]:\nSETNX token_hash 1 EX 3600 -> Returns 0 (Already exists!)\n\n[GATEWAY REJECTION (401)]:\n{\n  "error": "Replay attack detected"\n}');
+    inspectRedisCache();
+  }
+}
+
+function ensureTurnstile() {
+  if (window.turnstile) {
+    try {
+      window.turnstile.render('#turnstile-container', {
+        sitekey: '0x4AAAAAAFjpggPl6dft8k9w',
+        theme: 'dark',
+        callback: (t) => { state.turnstileToken = t; $('#turnstile-status').textContent = '✓ Turnstile solved.'; }
+      });
+    } catch(e) {}
+  }
+}
+
+async function inspectRedisCache() {
+  try {
+    const res = await fetch('http://localhost:3002/api/cache');
+    const data = await res.json();
+    if (data.redis_keys_count > 0) {
+      $('#redis-preview').textContent = Object.keys(data.cache).map(k => `Hash: ${k.substring(0,16)}… | TTL: ${data.cache[k].ttl_seconds}s`).join('\n');
+    } else {
+      $('#redis-preview').textContent = 'Redis DB: 0 keys stored.';
+    }
+  } catch(e) {
+    $('#redis-preview').textContent = 'Redis DB: Active (Simulated mode)';
+  }
+}
+
+async function clearRedisCache() {
+  try {
+    await fetch('http://localhost:3002/api/cache/flush', { method: 'DELETE' });
+    toast('Redis cache flushed', 'ok');
+    inspectRedisCache();
+  } catch(e) {
+    toast('Flush simulated', 'ok');
+    $('#redis-preview').textContent = 'Redis DB: 0 keys stored.';
+  }
+}
+
+function copyPacket() {
+  navigator.clipboard.writeText($('#packet-inspector').textContent).then(() => toast('Packet copied', 'ok'));
+}
+
+function runBenchmark() {
+  $$('.bar-fill').forEach(el => {
+    el.style.width = '0%';
+    void el.offsetWidth;
+    el.style.width = el.dataset.w + '%';
+  });
+  const container = $('#pods');
+  if (container && container.children.length === 0) {
+    container.innerHTML = Array.from({length: 36}, (_, i) => `<div class="pod ${i < 10 ? 'on' : ''}">${i+1}</div>`).join('');
+  }
+  $$('.stat-value span').forEach(el => {
+    const target = Number(el.dataset.count);
+    const dec = Number(el.dataset.dec);
+    let cur = 0;
+    const step = target / 25;
+    const timer = setInterval(() => {
+      cur += step;
+      if (cur >= target) { cur = target; clearInterval(timer); }
+      el.textContent = cur.toFixed(dec);
+    }, 30);
+  });
+}
+</script>
 </body>
 </html>

@@ -1,17 +1,29 @@
 services:
   redis:
-    image: redis:latest
+    image: redis:7.2-alpine
     container_name: redis-replay
     ports:
       - "6379:6379"
-  
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   issuer:
     build:
       context: .
       dockerfile: issuer/Dockerfile
     ports:
       - "3001:3001"
-  
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   gateway:
     build:
       context: .
@@ -22,9 +34,12 @@ services:
       - REDIS_HOST=redis
       - ISSUER_URL=http://issuer:3001
       - ORIGIN_URL=http://origin:3003
+    restart: unless-stopped
     depends_on:
-      - redis
-      - issuer
+      redis:
+        condition: service_healthy
+      issuer:
+        condition: service_healthy
   
   origin:
     build:
@@ -32,6 +47,7 @@ services:
       dockerfile: origin/Dockerfile
     ports:
       - "3003:3003"
+    restart: unless-stopped
     depends_on:
       - gateway
   
